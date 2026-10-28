@@ -16,6 +16,7 @@ import logging
 import os
 import random
 import re
+import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -266,10 +267,14 @@ class Director:
                 if getattr(prim, "engine", "") != "chatterbox":
                     await self.status("chatterbox engine is not the primary voice (set TTS_ENGINE=chatterbox and restart)")
                     return
-                ref = Path("app/voice/ref") / (voice if voice.endswith(".wav") else f"{voice}.wav")
-                if ref.exists():
-                    prim.voice = str(ref)
-                    prim._cache.clear()
+                if hasattr(prim, "apply_voice_id"):
+                    prim.apply_voice_id(voice)
+                    threading.Thread(target=prim._load, daemon=True).start()     # a new variant loads in the background
+                else:
+                    ref = Path("app/voice/ref") / (voice if voice.endswith(".wav") else f"{voice}.wav")
+                    if ref.exists():
+                        prim.voice = str(ref)
+                        prim._cache.clear()
                 if hasattr(target, "primary_disabled_until"):
                     target.primary_disabled_until = 0.0
             elif engine == "kokoro":

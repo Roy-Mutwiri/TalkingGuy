@@ -79,33 +79,71 @@ def _patch_tokenizer_dtype() -> None:
 
 
 from .edge_voice import _ctx  # noqa: E402
+from .sfx import available as sfx_available  # noqa: E402
 
 
 class ChatterboxSpeaker(EdgeSpeaker):
     expressive = True
 
-    def __init__(self, ref: str | None = None, device: str | None = None) -> None:
+    # variants: "turbo" (fast, performs [laugh]/[sigh] tags), "full" (slower, follows the reference more closely:
+    # cfg_weight 0.3), "mtl" (multilingual; language "ar" speaks English with an Arabic accent). Picked by voice id:
+    # "haddan_own_c" = turbo, "haddan_own_c|full", "haddan_own_c|ar" (= mtl + Arabic), "haddan_own_c|mtl" (mtl, English)
+    VARIANTS = ("turbo", "full", "mtl")
+
+    def __init__(self, ref: str | None = None, device: str | None = None, variant: str | None = None, language: str | None = None) -> None:
         super().__init__(voice="en-US-GuyNeural", device=device)
         self.engine = "chatterbox"
         self.voice = str(ref or os.getenv("TTS_REF") or DEFAULT_REF)
-        self._model = None
+        self.variant = (variant or os.getenv("TTS_VARIANT", "turbo")).lower()
+        self.language = (language or os.getenv("TTS_LANG", "en")).lower()
+        self.cfg_weight = float(os.getenv("TTS_CFG", "0.3"))
+        self._models: dict[str, object] = {}
         self._model_lock = threading.Lock()
         self._gpu_lock = threading.Lock()
         self.model_sr = 24000
-        log.info("Chatterbox-Turbo voice selected, reference=%s", Path(self.voice).name)
+        self.apply_voice_id(Path(self.voice).stem + ("" if self.variant == "turbo" else "|" + (self.language if self.variant == "mtl" and self.language != "en" else self.variant)))
+        log.info("Chatterbox voice selected: reference=%s variant=%s language=%s", Path(self.voice).name, self.variant, self.language)
+
+    def apply_voice_id(self, voice_id: str) -> None:
+        """'haddan_own_c', 'haddan_own_c|full', 'haddan_own_c|ar', 'haddan_own_c|mtl' -> reference, variant, language."""
+        name, _, opt = voice_id.partition("|")
+        ref = Path("app/voice/ref") / (name if name.endswith(".wav") else f"{name}.wav")
+        if ref.exists():
+            self.voice = str(ref)
+        opt = opt.lower().strip()
+        if opt in ("", "turbo"):
+            self.variant, self.language = "turbo", "en"
+        elif opt == "full":
+            self.variant, self.language = "full", "en"
+        elif opt == "mtl":
+            self.variant, self.language = "mtl", "en"
+        else:
+            self.variant, self.language = "mtl", opt          # a language code: multilingual model, that accent
+        self.expressive = self.variant == "turbo" or sfx_available()
+        with self._cache_lock:
+            self._cache.clear()
+
+    @property
+    def performs_tags(self) -> bool:
+        return self.variant == "turbo"
 
     # ---- model -----------------------------------------------------------------
-    def _load(self):
+    def _load(self, variant: str | None = None):
+        variant = variant or self.variant
         with self._model_lock:
-            if self._model is None:
+            if variant not in self._models:
                 t0 = time.time()
                 _patch_tokenizer_dtype()
-                from chatterbox.tts_turbo import ChatterboxTurboTTS
-
-                self._model = ChatterboxTurboTTS.from_pretrained(device="cuda")
-                self.model_sr = int(getattr(self._model, "sr", 24000))
-                log.info("Chatterbox-Turbo loaded on cuda in %.0fs (sr %d)", time.time() - t0, self.model_sr)
-        return self._model
+                if variant == "full":
+                    from chatterbox.tts import ChatterboxTTS as M
+                elif variant == "mtl":
+                    from chatterbox.mtl_tts import ChatterboxMultilingualTTS as M
+                else:
+                    from chatterbox.tts_turbo import ChatterboxTurboTTS as M
+                self._models[variant] = M.from_pretrained(device="cuda")
+                self.model_sr = int(getattr(self._models[variant], "sr", 24000))
+                log.info("Chatterbox %s loaded on cuda in %.0fs (sr %d)", variant, time.time() - t0, self.model_sr)
+        return self._models[variant]
 
     def warm(self) -> None:
         threading.Thread(target=self._load, daemon=True).start()
@@ -121,8 +159,16 @@ class ChatterboxSpeaker(EdgeSpeaker):
             while getattr(self, "_urgent_count", 0) > 0 and time.time() - t_w < 30:
                 time.sleep(0.05)
         t0 = time.time()
+        if self.variant != "turbo":
+            from .tags import strip as _strip
+            text = _strip(text) or text                       # only Turbo performs bracket tags
         with self._gpu_lock:
-            wav = model.generate(text, audio_prompt_path=self.voice, temperature=temp)   # Turbo ignores exaggeration/cfg (and warns per call)
+            if self.variant == "full":
+                wav = model.generate(text, audio_prompt_path=self.voice, exaggeration=exag, cfg_weight=self.cfg_weight, temperature=temp)
+            elif self.variant == "mtl":
+                wav = model.generate(text, language_id=self.language, audio_prompt_path=self.voice, exaggeration=exag, cfg_weight=self.cfg_weight, temperature=temp)
+            else:
+                wav = model.generate(text, audio_prompt_path=self.voice, temperature=temp)   # Turbo ignores exaggeration/cfg (and warns per call)
         a = wav.squeeze().detach().cpu().numpy().astype(np.float32)
         dt = time.time() - t0
         secs = a.size / self.model_sr

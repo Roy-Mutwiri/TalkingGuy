@@ -259,7 +259,7 @@ class EdgeSpeaker:
             return
         # the host's own recorded laughs / sighs stand in for tags at the edges of a sentence
         edges: list[tuple[list[str], list[str]]] = []
-        if getattr(self, "expressive", False) and sfx.available():
+        if sfx.available() and getattr(self, "expressive", False):
             stripped = []
             for s in sentences:
                 lead, body, tail = sfx.split_edge_tags(s)
