@@ -148,11 +148,33 @@ class ChatterboxSpeaker(EdgeSpeaker):
     def warm(self) -> None:
         threading.Thread(target=self._load, daemon=True).start()
 
+    @staticmethod
+    def emotion_for(text: str, mood: str) -> float:
+        """Exaggeration for one sentence: the mood sets the floor, the words move it. A question lifts, a real move
+        lifts a lot, the risk line and asides settle. Turbo ignores this; the full and multilingual models use it."""
+        from .human import ASIDE_RE, EXCITE_RE, POINT_RE, RISK_RE
+
+        e = MOOD_PARAMS.get(mood, MOOD_PARAMS["teach"])[0]
+        if text.strip().endswith("?"):
+            e += 0.10
+        if EXCITE_RE.search(text):
+            e += 0.25
+        if POINT_RE.search(text):
+            e += 0.12
+        if RISK_RE.search(text):
+            e -= 0.12
+        if ASIDE_RE.search(text):
+            e -= 0.10
+        if len(text.split()) <= 4:
+            e += 0.08
+        return float(max(0.25, min(0.95, e)))
+
     def _synth_one(self, text: str) -> np.ndarray:
         from scipy.signal import resample_poly
 
         model = self._load()
         exag, cfg, temp = MOOD_PARAMS.get(self.mood, MOOD_PARAMS["teach"])
+        exag = self.emotion_for(text, self.mood)
         # the producer (the line being spoken now) goes first; a prefetch of a later line waits its turn
         if not getattr(_ctx, "urgent", False):
             t_w = time.time()

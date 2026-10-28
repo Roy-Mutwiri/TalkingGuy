@@ -56,6 +56,9 @@ class Plan:
     warmth_db: float = 0.0      # low-shelf offset (time of day)
     presence_db: float = 0.0    # presence peak offset (time of day)
     roughness: float = 0.0      # 0..1 saturation from a long talking stretch
+    contour: str = "statement"  # intonation shape: statement | question | continue | emphasis | flat
+    key_st: float = 0.0         # per-sentence pitch offset in semitones (no two sentences in the same key)
+    strength: float = 0.8       # how much of the contour to apply
     notes: list[str] = field(default_factory=list)
 
 
@@ -132,6 +135,17 @@ def plan_sentence(sentence: str, *, mood: str = "teach", index: int = 0, total: 
         p.inhale = rng.random() < 0.3; p.notes.append("long")
     if words <= 3 and index == 0:
         p.post_gap += 0.15                      # "Okay." then a beat
+    # intonation: what kind of sentence is this, melodically
+    if s.endswith("?"):
+        p.contour = "question"
+    elif POINT_RE.search(s) or (EXCITE_RE.search(s) and words <= 10):
+        p.contour = "emphasis"
+    elif index < total - 1 and (s.endswith(",") or words <= 5 or re.search(r"\b(and|but|so|because|which)\s*[.!]?$", s, re.I)):
+        p.contour = "continue"
+    else:
+        p.contour = "statement"
+    p.key_st = (float(rng.random()) - 0.5) * 1.2
+    p.strength = 0.6 + float(rng.random()) * 0.5
     # mouth noises: rare, never on an aside or a murmur
     if not p.aside and rng.random() < 0.07:
         p.smack = True
@@ -146,6 +160,7 @@ def plan_sentence(sentence: str, *, mood: str = "teach", index: int = 0, total: 
             setattr(p, k, v)
         if override.get("murmur"):
             p.level_db = -4.5; p.proximity += 0.8; p.breath = False; p.smack = False; p.inhale = False; p.pre_gap = 0.0
+            p.contour = "flat"; p.key_st = 0.0
             p.notes.append("murmur")
     p.speed = 1.0 if engine_sets_rate else float(min(1.12, max(0.88, spd)))
     p.proximity = float(min(1.0, max(-1.0, p.proximity)))
@@ -187,6 +202,80 @@ def _wsola(x: np.ndarray, rate: int, factor: float, win_ms: float = 30.0, tol_ms
         pos_in += hop_in
     y = out[:pos_out + hop] / np.maximum(norm[:pos_out + hop], 1e-3)
     return y.astype(np.float32)
+
+
+# ------------------------------------------------------------------ intonation
+# semitone contour over five slices of the sentence, and a gain contour (dB) for emphasis and trailing off
+CONTOURS = {
+    "question":  ([0.0, 0.1, 0.4, 1.1, 2.4], [0.0, 0.0, 0.0, 0.3, 0.6]),
+    "statement": ([0.5, 0.9, 0.3, -0.4, -1.5], [0.3, 0.6, 0.0, -0.4, -1.2]),
+    "continue":  ([0.2, 0.5, 0.2, 0.3, 0.9], [0.0, 0.2, 0.0, 0.0, -0.3]),
+    "emphasis":  ([1.5, 1.9, 0.7, 0.0, -0.9], [1.0, 1.4, 0.3, 0.0, -0.6]),
+    "flat":      ([0.0] * 5, [0.0] * 5),
+}
+
+
+def _slices(y: np.ndarray, rate: int, k: int = 5) -> list[int]:
+    """Boundaries for k slices, each snapped to the quietest point near an equal division (between words, not inside one)."""
+    n = y.size
+    hop = max(1, int(rate * 0.01))
+    frames = max(1, n // hop)
+    env = np.sqrt((y[:frames * hop].reshape(frames, hop) ** 2).mean(axis=1) + 1e-9)
+    bounds = [0]
+    for i in range(1, k):
+        target = int(n * i / k)
+        lo, hi = max(hop, target - int(rate * 0.12)), min(n - hop, target + int(rate * 0.12))
+        if hi <= lo + hop:
+            bounds.append(target)
+            continue
+        seg = env[lo // hop:hi // hop]
+        bounds.append(lo + int(np.argmin(seg)) * hop if seg.size else target)
+    bounds.append(n)
+    return bounds
+
+
+def pitch_shift(x: np.ndarray, rate: int, semitones: float) -> np.ndarray:
+    """Shift pitch, keep duration: resample (changes pitch and length) then WSOLA back to the original length."""
+    if abs(semitones) < 0.08 or x.size < int(rate * 0.06):
+        return x
+    from fractions import Fraction
+    from scipy.signal import resample_poly
+
+    f = 2 ** (semitones / 12.0)
+    fr = Fraction(1.0 / f).limit_denominator(96)
+    y = resample_poly(x, fr.numerator, fr.denominator).astype(np.float32)      # length / f
+    z = _wsola(y, rate, y.size / max(1, x.size)) if y.size > int(rate * 0.06) else y
+    if z.size > x.size:
+        z = z[:x.size]
+    elif z.size < x.size:
+        z = np.concatenate([z, np.zeros(x.size - z.size, dtype=np.float32)])
+    return z.astype(np.float32)
+
+
+def shape_intonation(y: np.ndarray, rate: int, contour: str, strength: float, key_st: float) -> np.ndarray:
+    """Give the sentence a melodic shape: a question rises, a statement lands and trails off, a continuation holds,
+    an emphasis sentence leans on its first words. Small amounts (under 3 semitones), with level following emphasis."""
+    if y.size < int(rate * 0.35) or contour not in CONTOURS:
+        return y
+    st_c, db_c = CONTOURS[contour]
+    bounds = _slices(y, rate, len(st_c))
+    parts = []
+    xf = int(rate * 0.015)
+    for i in range(len(bounds) - 1):
+        seg = y[bounds[i]:bounds[i + 1]]
+        st = max(-3.0, min(3.0, st_c[i] * strength + key_st))
+        seg = pitch_shift(seg, rate, st)
+        seg = (seg * 10 ** (db_c[i] * strength / 20)).astype(np.float32)
+        parts.append(seg)
+    out = parts[0]
+    for p in parts[1:]:
+        k = min(xf, out.size, p.size)
+        if k > 8:
+            r = np.linspace(0, 1, k, dtype=np.float32)
+            out = np.concatenate([out[:-k], out[-k:] * (1 - r) + p[:k] * r, p[k:]])
+        else:
+            out = np.concatenate([out, p])
+    return out.astype(np.float32)
 
 
 def proximity(x: np.ndarray, rate: int, amount: float) -> np.ndarray:
@@ -246,6 +335,8 @@ def render(voice: np.ndarray, rate: int, plan: Plan, rng: np.random.Generator, *
     y = voice
     if plan.speed != 1.0:
         y = time_stretch(y, rate, plan.speed)
+    if plan.contour != "flat":
+        y = shape_intonation(y, rate, plan.contour, plan.strength, plan.key_st)
     y = tone_of_day(y, rate, plan.warmth_db, plan.presence_db)
     y = proximity(y, rate, plan.proximity)
     y = roughen(y, plan.roughness)
@@ -291,6 +382,7 @@ def describe(plan: Plan) -> str:
         bits.append(f"{plan.level_db:+.1f} dB")
     if abs(plan.proximity) >= 0.3:
         bits.append("lean " + ("in" if plan.proximity > 0 else "back"))
+    bits.append(plan.contour)
     bits += [n for n in plan.notes if n not in ("day",)]
     if plan.smack:
         bits.append("smack")

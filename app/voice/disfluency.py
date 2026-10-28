@@ -95,7 +95,7 @@ def humanize_text(text: str, mood: str = "teach", seed: int | None = None) -> st
     for i, s in enumerate(sents):
         s2 = s
         # opener on the first sentence sometimes, on later ones rarely
-        p_open = 0.28 if i == 0 else 0.07
+        p_open = 0.16 if i == 0 else 0.05
         if rnd.random() < p_open and not re.match(r"^(okay|so|right|look|now|alright|see|hey|oh|wait|hmm|yo)\b", s2, re.I):
             op = rnd.choice(OPENERS.get(mood, OPENERS["teach"]))
             first = s2.split()[0].rstrip(",.") if s2.split() else ""
