@@ -145,7 +145,7 @@ def plan_sentence(sentence: str, *, mood: str = "teach", index: int = 0, total: 
     else:
         p.contour = "statement"
     p.key_st = (float(rng.random()) - 0.5) * 1.2
-    p.strength = 0.6 + float(rng.random()) * 0.5
+    p.strength = 0.9 + float(rng.random()) * 0.5
     # mouth noises: rare, never on an aside or a murmur
     if not p.aside and rng.random() < 0.07:
         p.smack = True
@@ -207,10 +207,10 @@ def _wsola(x: np.ndarray, rate: int, factor: float, win_ms: float = 30.0, tol_ms
 # ------------------------------------------------------------------ intonation
 # semitone contour over five slices of the sentence, and a gain contour (dB) for emphasis and trailing off
 CONTOURS = {
-    "question":  ([0.0, 0.1, 0.4, 1.1, 2.4], [0.0, 0.0, 0.0, 0.3, 0.6]),
-    "statement": ([0.5, 0.9, 0.3, -0.4, -1.5], [0.3, 0.6, 0.0, -0.4, -1.2]),
-    "continue":  ([0.2, 0.5, 0.2, 0.3, 0.9], [0.0, 0.2, 0.0, 0.0, -0.3]),
-    "emphasis":  ([1.5, 1.9, 0.7, 0.0, -0.9], [1.0, 1.4, 0.3, 0.0, -0.6]),
+    "question":  ([0.0, 0.1, 0.4, 1.2, 2.6], [0.0, 0.0, 0.2, 0.6, 1.0]),
+    "statement": ([0.6, 1.0, 0.3, -0.5, -1.7], [0.6, 1.0, 0.0, -0.7, -1.8]),
+    "continue":  ([0.2, 0.6, 0.2, 0.3, 1.0], [0.0, 0.4, 0.0, 0.0, -0.5]),
+    "emphasis":  ([1.6, 2.0, 0.8, 0.0, -1.0], [1.6, 2.0, 0.5, 0.0, -1.0]),
     "flat":      ([0.0] * 5, [0.0] * 5),
 }
 
