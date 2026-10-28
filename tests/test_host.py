@@ -172,10 +172,14 @@ def test_nonverbal_layer_is_disciplined():
     # cue-driven: a loss earns a sigh up front; a nailed answer earns a laugh after the sentence that earned it
     loss = nv.decorate("Sorry, that one stings. Let's slow down and do the useful part.", "considerate", now=100.0)
     assert loss.startswith("[sigh]")
-    win = nv.decorate("Sam, you spotted it! Let's look at why that matters.", "cheerful", now=200.0)
-    assert "[laugh]" in win and win.index("[laugh]") < win.index("Let's")
-    # rate limit: nothing within the gap
-    assert nv.decorate("Sam, you spotted it! Again.", "cheerful", now=205.0) == "Sam, you spotted it! Again."
+    # a nailed answer can earn a laugh after the sentence that earned it; it is deliberately not every time
+    wins = [nv.decorate("Sam, you spotted it! Let's look at why that matters.", "cheerful", now=200.0 + 100.0 * k) for k in range(30)]
+    laughed = [w for w in wins if "[laugh]" in w]
+    assert laughed and all(w.index("[laugh]") < w.index("Let's") for w in laughed)
+    assert len(laughed) < len(wins)
+    # rate limit: nothing within the gap right after a sound
+    nv.last_ts = 205.0
+    assert nv.decorate("Sam, you spotted it! Again.", "cheerful", now=210.0) == "Sam, you spotted it! Again."
     # never on disclaimers, recaps, numbers, serious mood, or text that already has a tag
     assert nv.decorate("Education only, not financial advice.", "cheerful", now=900.0).startswith("Education")
     assert "[" not in nv.decorate("Recap in one breath. Mark the level first.", "cheerful", now=1000.0)

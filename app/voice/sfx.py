@@ -26,16 +26,18 @@ _TAG_EDGE = re.compile(r"^\s*\[\s*([a-zA-Z ]{3,14})\s*\]\s*|\s*\[\s*([a-zA-Z ]{3
 
 # tag (engine vocabulary) -> sample name prefixes that can stand in for it
 FAMILIES: dict[str, list[str]] = {
-    "laugh": ["laugh_small", "laugh_medium", "laugh_big", "laugh_warm"],
-    "chuckle": ["chuckle", "laugh_small"],
+    "laugh": ["laugh_small", "laugh_warm"],            # the big laughs stay out of automatic use: they only sound right when earned
+    "chuckle": ["chuckle"],
     "sigh": ["sigh_short", "sigh_long"],
     "groan": ["groan"],
-    "breath": ["breath_in", "breath_slow"],
-    "inhale": ["breath_in"],
+    "breath": ["breathing"],                           # a short slice of normal breathing, never the deliberate inhale
+    "inhale": ["breath_slow"],
     "murmur": ["murmur_hmm", "murmur_mm_hm", "murmur_okay", "murmur_right_so", "murmur_yeah", "murmur_there", "murmur_let_me_see"],
 }
 # target RMS (dBFS) per family so a laugh sits at speech level and a breath stays under it
-LEVEL_DB = {"laugh": -20.0, "chuckle": -24.0, "sigh": -26.0, "groan": -24.0, "breath": -34.0, "inhale": -32.0, "murmur": -24.0}
+# a real breath sits 25-30 dB under the voice (speech is normalised to -17 dBFS RMS); laughs a little under speech level
+LEVEL_DB = {"laugh": -23.0, "chuckle": -26.0, "sigh": -30.0, "groan": -27.0, "breath": -45.0, "inhale": -40.0, "murmur": -26.0}
+SLICE_S = {"breath": (0.25, 0.45), "inhale": (0.45, 0.7)}     # families served as a random short slice of the sample
 
 
 def available() -> bool:
@@ -77,6 +79,16 @@ def get(family: str, rate: int, rng: random.Random | np.random.Generator | None 
         x = _load(name, rate)
         if x is None or x.size < rate // 20:
             continue
+        if family in SLICE_S:
+            lo, hi = SLICE_S[family]
+            want = int(rate * (lo + (hi - lo) * (r.random() if isinstance(r, random.Random) else random.random())))
+            if x.size > want + rate // 10:
+                start = (r.randint if isinstance(r, random.Random) else random.randint)(0, x.size - want - 1)
+                x = x[start:start + want].copy()
+            n = max(8, int(rate * 0.04))
+            ramp = np.linspace(0, 1, n, dtype=np.float32)
+            x[:n] *= ramp
+            x[-n:] *= ramp[::-1]
         rms = float(np.sqrt(np.mean(x ** 2))) or 1e-6
         g = 10 ** (LEVEL_DB.get(family, -24.0) / 20) / rms
         y = np.clip(x * min(g, 10 ** (24 / 20)), -0.95, 0.95).astype(np.float32)
@@ -115,3 +127,21 @@ def split_edge_tags(sentence: str) -> tuple[list[str], str, list[str]]:
 
 def gap(rate: int, seconds: float) -> np.ndarray:
     return np.zeros(int(rate * seconds), dtype=np.float32)
+
+
+def join(parts: list[np.ndarray], rate: int, xfade_s: float = 0.08) -> np.ndarray:
+    """Concatenate with short crossfades so a recorded sound runs into the voice instead of sitting on top of it."""
+    parts = [np.asarray(p, dtype=np.float32) for p in parts if p is not None and p.size]
+    if not parts:
+        return np.zeros(0, dtype=np.float32)
+    out = parts[0].copy()
+    n = int(rate * xfade_s)
+    for p in parts[1:]:
+        k = min(n, out.size, p.size)
+        if k > 8:
+            ramp = np.linspace(0, 1, k, dtype=np.float32)
+            out[-k:] = out[-k:] * (1 - ramp) + p[:k] * ramp
+            out = np.concatenate([out, p[k:]])
+        else:
+            out = np.concatenate([out, p])
+    return out.astype(np.float32)

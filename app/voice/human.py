@@ -129,7 +129,7 @@ def plan_sentence(sentence: str, *, mood: str = "teach", index: int = 0, total: 
     if s.endswith("?"):
         p.post_gap += 0.3 + float(rng.random()) * 0.4; p.notes.append("question")
     if words >= 26:
-        p.inhale = rng.random() < 0.7; p.notes.append("long")
+        p.inhale = rng.random() < 0.3; p.notes.append("long")
     if words <= 3 and index == 0:
         p.post_gap += 0.15                      # "Okay." then a beat
     # mouth noises: rare, never on an aside or a murmur
@@ -262,9 +262,10 @@ def render(voice: np.ndarray, rate: int, plan: Plan, rng: np.random.Generator, *
         parts.append(room_tone(rate, 0.03 + float(rng.random()) * 0.04, rng=rng))
     want_breath = plan.breath
     if want_breath is None:
-        p_breath = 0.5 if (first or long_prev) else 0.18
+        # a person breathes between most sentences, but you only HEAR it now and then: first line of a turn, after a long one
+        p_breath = 0.28 if (first or long_prev) else 0.07
         if mood in ("hype", "excited"):
-            p_breath += 0.15
+            p_breath += 0.08
         want_breath = bool(rng.random() < p_breath)
     if plan.inhale or want_breath:
         from . import sfx

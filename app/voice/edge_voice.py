@@ -302,13 +302,13 @@ class EdgeSpeaker:
                 for fam in lead:
                     clip = sfx.get(fam, self.out_rate)
                     if clip is not None:
-                        parts += [clip, sfx.gap(self.out_rate, 0.12)]
+                        parts.append(clip)
                 parts.append(out)
                 for fam in tail:
                     clip = sfx.get(fam, self.out_rate)
                     if clip is not None:
-                        parts += [sfx.gap(self.out_rate, 0.10), clip]
-                out = np.concatenate(parts).astype(np.float32)
+                        parts.append(clip)
+                out = sfx.join(parts, self.out_rate, 0.09)
             if a.size:
                 self.clock.note(out.size / self.out_rate)
                 log.debug("delivery: %s | %s", describe(plan), s[:60])
