@@ -84,6 +84,7 @@ class EdgeSpeaker:
         self._ring = None
         self._cache: OrderedDict[str, np.ndarray] = OrderedDict()
         self._cache_lock = threading.Lock()
+        self._delivered: OrderedDict[tuple, np.ndarray] = OrderedDict()   # finished audio (plan + intonation + chain), by sentence
         self._inflight: set[str] = set()
         try:
             self._player()
@@ -208,17 +209,58 @@ class EdgeSpeaker:
         parts = self.synth_many(split_sentences(text))
         return np.concatenate(parts) if parts else np.zeros(0, dtype=np.float32)
 
+    def _finish(self, i: int, s: str, a: np.ndarray, prev_len: int, total: int, mood: str, override: dict | None,
+                lead: list[str], tail: list[str]) -> np.ndarray:
+        """Everything between raw synthesis and the player: delivery plan, intonation, mic chain, recorded sounds.
+        Cached per sentence (when nothing one-off is involved) so prefetch pays for it, not the live line."""
+        key = (s, mood, i == 0, prev_len > 90, self.variant if hasattr(self, "variant") else "", self.voice)
+        cacheable = override is None and not lead and not tail and a.size > 0
+        if cacheable:
+            with self._cache_lock:
+                hit = self._delivered.get(key)
+            if hit is not None:
+                return hit
+        rng = np.random.default_rng(_seed(s))
+        plan = plan_sentence(s, mood=mood, index=i, total=total, rng=rng, clock=self.clock,
+                             engine_sets_rate=self.engine == "edge", override=override)
+        out = humanize_sentence(a, self.out_rate, first=i == 0, long_prev=prev_len > 90, mood=mood, seed=_seed(s), plan=plan)
+        if a.size and (lead or tail):
+            parts = []
+            for fam in lead:
+                clip = sfx.get(fam, self.out_rate)
+                if clip is not None:
+                    parts.append(clip)
+            parts.append(out)
+            for fam in tail:
+                clip = sfx.get(fam, self.out_rate)
+                if clip is not None:
+                    parts.append(clip)
+            out = sfx.join(parts, self.out_rate, 0.09)
+        if a.size:
+            log.debug("delivery: %s | %s", describe(plan), s[:60])
+        if cacheable:
+            with self._cache_lock:
+                self._delivered[key] = out
+                while len(self._delivered) > 160:
+                    self._delivered.popitem(last=False)
+        return out
+
     def prefetch(self, text: str) -> None:
-        """Warm the synthesis cache for a future utterance in a background thread (no audio), so the line
-        plays the instant it is called for."""
+        """Warm the caches for a future utterance in a background thread (no audio): synthesis AND the finished
+        delivery (intonation, chain, breaths), so the line plays the instant it is called for with no work left."""
         sentences = split_sentences(text)
         if not sentences:
             return
+        mood = self.mood
 
         def work() -> None:
             try:
-                for s_ in sentences:
-                    self.synth_many([s_])
+                prev_len = 0
+                for i, s_ in enumerate(sentences):
+                    a = self.synth_many([s_])[0]
+                    if a.size:
+                        self._finish(i, s_, a, prev_len, len(sentences), mood, None, [], [])
+                    prev_len = len(s_)
             except Exception as exc:  # noqa: BLE001
                 log.warning("prefetch failed: %s", exc)
 
@@ -293,26 +335,10 @@ class EdgeSpeaker:
         engine_rate = self.engine == "edge"
 
         def deliver(i: int, s: str, a: np.ndarray, prev_len: int) -> np.ndarray:
-            rng = np.random.default_rng(_seed(s))
-            plan = plan_sentence(s, mood=mood_now, index=i, total=len(sentences), rng=rng, clock=self.clock,
-                                 engine_sets_rate=engine_rate, override=override)
-            out = humanize_sentence(a, self.out_rate, first=i == 0, long_prev=prev_len > 90, mood=mood_now, seed=_seed(s), plan=plan)
             lead, tail = edges[i] if i < len(edges) else ([], [])
-            if a.size and (lead or tail):
-                parts = []
-                for fam in lead:
-                    clip = sfx.get(fam, self.out_rate)
-                    if clip is not None:
-                        parts.append(clip)
-                parts.append(out)
-                for fam in tail:
-                    clip = sfx.get(fam, self.out_rate)
-                    if clip is not None:
-                        parts.append(clip)
-                out = sfx.join(parts, self.out_rate, 0.09)
+            out = self._finish(i, s, a, prev_len, len(sentences), mood_now, override, lead, tail)
             if a.size:
                 self.clock.note(out.size / self.out_rate)
-                log.debug("delivery: %s | %s", describe(plan), s[:60])
             return out
 
         def producer():
@@ -337,13 +363,15 @@ class EdgeSpeaker:
                 audio_q.put((sentences[0], a0))
                 if rest_thread:
                     rest_thread.join()
-                    prev_len = len(sentences[0])
-                    for i, (s, a) in enumerate(zip(sentences[1:], rest), start=1):
-                        if self._stop.is_set():
-                            break
-                        ah = deliver(i, s, a, prev_len)
-                        audio_q.put((s, ah))
-                        prev_len = len(s)
+                    from concurrent.futures import ThreadPoolExecutor
+
+                    items = list(enumerate(zip(sentences[1:], rest), start=1))
+                    with ThreadPoolExecutor(max_workers=4) as pool:     # the finishing work runs side by side, in order of need
+                        futs = [pool.submit(deliver, i, s, a, len(sentences[i - 1])) for i, (s, a) in items]
+                        for (i, (s, a)), fut in zip(items, futs):
+                            if self._stop.is_set():
+                                break
+                            audio_q.put((s, fut.result()))
             except Exception as exc:  # noqa: BLE001
                 log.exception("synthesis failed")
                 emit({"event": "error", "error": str(exc)})
