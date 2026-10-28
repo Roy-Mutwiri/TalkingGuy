@@ -35,5 +35,19 @@
     "file": "sfx/*.wav",
     "speaker": "Haddan (the host)",
     "source": "The host's own recording, 2026-10-28: laughs, chuckle, sighs, groan, breaths, murmurs (see sfx/index.json)"
+  },
+  {
+    "file": "haddan_own_c.wav",
+    "speaker": "Haddan (the host)",
+    "seconds": 12.8,
+    "source": "The host's own recording, 2026-10-28, 49.95-62.75 s (calm teaching; closest pitch/melody match)",
+    "text": "Slow chart tonight ... gold is on its daily break."
+  },
+  {
+    "file": "haddan_own_d.wav",
+    "speaker": "Haddan (the host)",
+    "seconds": 13.0,
+    "source": "The host's own recording, 2026-10-28, 59.45-72.45 s",
+    "text": "Bitcoin is the chart of the hour ... eighty thousand six hundred."
   }
 ]
