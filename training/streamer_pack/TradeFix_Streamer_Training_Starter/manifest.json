@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "created": "2026-10-26",
+  "timezone": "America/New_York",
+  "counts": {
+    "sft_train": 32,
+    "sft_validation": 8,
+    "sft_test": 8,
+    "preference_train": 8,
+    "preference_validation": 4
+  },
+  "provenance": "original_synthetic",
+  "human_reviewed": false,
+  "trained_model": false,
+  "real_viewer_evaluation": false,
+  "contains_audio": false,
+  "checks": [
+    "JSON parses",
+    "48 unique scenarios",
+    "32/8/8 SFT split",
+    "valid reply references",
+    "wait outputs empty",
+    "speech_busy always waits",
+    "emoji absent from speech targets",
+    "8/4 preference split",
+    "all examples explicitly synthetic"
+  ],
+  "sha256": {
+    "README.md": "a399dba9bd2cbbea0de2c42a4233561861e38aa969d7a1c2e4af316470c732d0",
+    "annotated_examples.jsonl": "b30ee80004b5e35fb0266b0e7f2c0f597280737b49e9fbd6a84c28bcce33d8cb",
+    "evaluation_rubric.md": "5e7a0bcd3803798a90b4b4e28ac46884483e2030ddac25ddb11dfe82af9a57fc",
+    "preference_annotations.jsonl": "4168341c5ef3212f88ed7c82f401db9bc15dacfe452dd45280e459738566907f",
+    "preference_train.jsonl": "8677867f7d46ab4bcfd1a72150002bbfa5179a7a9f0e6311be0db3881c9d7364",
+    "preference_validation.jsonl": "059a4d39497534618d770e5b983359d8b894183c5c1b3f8154e697e7cd09e255",
+    "sft_test.jsonl": "89042ea1cefa475fce448d16f33f55a7ebeb854793046fde1e0f8d8d7d1b9a4d",
+    "sft_train.jsonl": "73d9bbb1f643a705ec255c94bfb1d0754278dd688e7b8d80b5c7d40ed5063028",
+    "sft_validation.jsonl": "f6ba9d351501449ab2a32dfbe272570f82a32eace4d5c8eaa8686ba1c1419474",
+    "sources.md": "35e95b050ad418170fe16dcad4bb29d1d5c5317c8bb105873ca20234a918b816"
+  }
+}

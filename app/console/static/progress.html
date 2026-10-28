@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Talking Trading Guy Progress</title>
+<style>
+:root { --bg:#0b0e14; --surface:#11151c; --surface-2:#171c25; --line:#232a35; --line-strong:#2e3744; --text:#e6e9ef; --text-2:#9aa3b2; --text-3:#6b7484;
+  --accent:#2962ff; --up:#089981; --down:#f23645; --gold:#f0b429; --font:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif; --mono:"Cascadia Mono",Consolas,ui-monospace,monospace; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--text); font: 14px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
+body { padding: 18px; max-width: 980px; margin: 0 auto; }
+header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.mark { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--up)); display: grid; place-items: center; font-weight: 800; font-size: 12px; color: #fff; }
+h1 { font-size: 16px; font-weight: 700; } .sub { font-size: 12px; color: var(--text-3); }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+section { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+section.wide { grid-column: 1 / -1; }
+h2 { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; display: flex; justify-content: space-between; }
+h2 .pill { font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--text-2); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+td, th { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+th { color: var(--text-3); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .8px; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; min-width: 120px; }
+.bar i { display: block; height: 100%; background: var(--accent); transition: width .5s; }
+.ok { color: var(--up); font-weight: 600; } .run { color: var(--gold); font-weight: 600; } .q { color: var(--text-3); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; } .kv b { color: var(--text-2); font-weight: 600; }
+pre { font: 12px/1.5 var(--mono); color: var(--text-2); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; white-space: pre-wrap; word-break: break-word; }
+.big { font: 700 26px/1 var(--font); font-variant-numeric: tabular-nums; }
+.row { display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="mark">TTG</div><div><h1>Build progress</h1><div class="sub">refreshes every 2 s</div></div></div>
+  <div class="sub" id="clock"></div>
+</header>
+<div class="grid">
+  <section class="wide">
+    <h2>Streamer study <span class="pill" id="study-sum"></span></h2>
+    <table><thead><tr><th>stream</th><th>download</th><th>MB</th><th>transcript</th><th>segments</th></tr></thead><tbody id="study-rows"></tbody></table>
+    <div class="row" style="margin-top:8px"><div><b>profile</b> <span id="st-profile"></span></div><div><b>report</b> <span id="st-report"></span></div><div><b>original demos</b> <span class="big" id="st-demos">0</span></div></div>
+    <pre id="study-log" style="margin-top:8px"></pre>
+  </section>
+  <section>
+    <h2>Model downloads</h2>
+    <table><tbody id="dl-rows"></tbody></table>
+  </section>
+  <section>
+    <h2>GPU</h2>
+    <div class="kv" id="gpu-kv"></div>
+  </section>
+  <section class="wide">
+    <h2>Theo on air</h2>
+    <div class="kv" id="teacher-kv"></div>
+  </section>
+</div>
+<script>
+const $ = (s) => document.querySelector(s);
+const cls = (s) => s === "done" ? "ok" : (s === "downloading" || s === "running") ? "run" : "q";
+const yes = (b) => b ? '<span class="ok">yes</span>' : '<span class="q">not yet</span>';
+async function tick() {
+  try {
+    const d = await (await fetch("/progress.json", { cache: "no-store" })).json();
+    $("#clock").textContent = d.time;
+    const s = d.study;
+    $("#study-sum").textContent = `${s.downloaded}/${s.total} downloaded · ${s.transcribed}/${s.total} transcribed`;
+    $("#study-rows").innerHTML = s.streams.map(r => `<tr><td>${r.id}</td><td class="${cls(r.download)}">${r.download}</td><td class="num">${r.download_mb}</td><td class="${cls(r.transcript)}">${r.transcript}</td><td class="num">${r.segments}</td></tr>`).join("");
+    $("#st-profile").innerHTML = yes(s.profile); $("#st-report").innerHTML = yes(s.report); $("#st-demos").textContent = s.demos;
+    $("#study-log").textContent = (s.log || []).join("\n");
+    $("#dl-rows").innerHTML = d.downloads.map(x => `<tr><td>${x.name}</td><td><div class="bar"><i style="width:${x.pct}%"></i></div></td><td class="num">${x.mb} / ${x.expected_mb} MB</td><td class="num ${x.pct >= 100 ? 'ok' : 'run'}">${x.pct}%</td></tr>`).join("");
+    const g = d.gpu;
+    $("#gpu-kv").innerHTML = g.total_mb ? `<b>memory</b>${g.used_mb} / ${g.total_mb} MB<b>utilisation</b>${g.util}%<b>temperature</b>${g.temp} °C` : "<b>gpu</b>n/a";
+    const t = d.teacher;
+    $("#teacher-kv").innerHTML = `<b>online since</b>${t.online_since || ""}<b>voice</b>${t.voice || ""}<b>brain</b>${t.brain || ""}<b>claude usage</b>${t.spend || ""}<b>last lesson</b>${t.last_lesson || ""}<b>last line</b>${t.last_say || ""}<b>recent utterances</b>${t.utterances_recent} (non-verbal ${t.nonverbal_recent}, scrubbed ${t.scrubs_recent})`;
+  } catch (e) { $("#clock").textContent = "hub not reachable"; }
+}
+tick(); setInterval(tick, 2000);
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# secrets and local state
+.env
+data_cache/
+logs/
+recordings/
+clips_out/
+.venv/
+.pytest_cache/
+__pycache__/
+*.pyc
+
+# build output
+build/
+dist/
+*.spec
+
+# local reference material (not needed to run the app)
+Trading_Room/
+training/streamer_style/audio/
+training/streamer_style/transcripts/
+training/streamer_style/*.out
+training/streamer_style/*.err
+training/streamer_style/*.log
+training/streamer_style/urls.txt
+*.m4a
+*.webm
+*.mp4

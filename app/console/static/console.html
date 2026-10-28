@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Talking Trading Guy Console</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root { --bg:#0b0e14; --surface:#11151c; --surface-2:#171c25; --line:#232a35; --line-strong:#2e3744; --text:#e6e9ef; --text-2:#9aa3b2; --text-3:#6b7484;
+  --accent:#2962ff; --up:#089981; --down:#f23645; --gold:#f0b429; --font:"Segoe UI Variable Text","Segoe UI",Inter,system-ui,sans-serif; --mono:"Cascadia Mono",Consolas,ui-monospace,monospace; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--text); font: 14px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
+body { padding: 20px; max-width: 760px; margin: 0 auto; }
+header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.mark { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--up)); display: grid; place-items: center; font-weight: 800; font-size: 12px; color: #fff; }
+h1 { font-size: 16px; font-weight: 700; }
+.sub { font-size: 12px; color: var(--text-3); }
+.status { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-2); padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-3); }
+.status.ok .dot { background: var(--up); } .status.bad .dot { background: var(--down); }
+section { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+section h2 { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-3); margin-bottom: 10px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.row + .row { margin-top: 10px; }
+button { font: inherit; font-weight: 600; color: var(--text); background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+button:hover { border-color: var(--text-3); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.danger { background: transparent; border-color: var(--down); color: var(--down); }
+input, select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 10px; min-width: 0; }
+input { flex: 1; } select { flex: 1; }
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+.hint { font-size: 12px; color: var(--text-3); }
+.muted { color: var(--text-2); font-size: 12px; }
+pre { font: 12px/1.5 var(--mono); color: var(--text-2); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; max-height: 260px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; }
+.kv b { color: var(--text-2); font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="mark">TTG</div><div><h1>Talking Trading Guy</h1><div class="sub">Operator console</div></div></div>
+  <div id="st" class="status"><span class="dot"></span><span id="st-text">connecting</span></div>
+</header>
+
+<section>
+  <h2>Stream</h2>
+  <div class="row">
+    <button onclick="cmd('pause')">Pause</button>
+    <button onclick="cmd('resume')">Resume</button>
+    <button onclick="cmd('skip')">Skip beat</button>
+    <button onclick="cmd('skip_lesson')">Skip lesson</button>
+    <button onclick="cmd('market')">Market tour now</button>
+    <button class="danger" onclick="cmd('mute')">Mute / unmute</button>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <span class="muted">Music</span>
+    <button id="btn-music" onclick="toggleMusic()">Popular music: OFF</button>
+    <button onclick="cmd('music_skip')">Skip track</button>
+    <span class="muted" id="np"></span>
+  </div>
+  <div class="muted" style="font-size:12px;margin-top:6px">ON = non-stop trending tracks from the internet (Audius, artist-uploaded, remixes filtered out, safe for LIVE). OFF = your own tracks in the music folder.</div>
+  <div class="row" style="margin-top:12px">
+    <span class="muted">Chart timeframe</span>
+    <button onclick="tf('1m')">1m</button><button onclick="tf('5m')">5m</button><button onclick="tf('15m')">15m</button><button onclick="tf('1h')">1h</button><button onclick="tf('4h')">4h</button><button onclick="tf('1d')">D</button>
+  </div>
+</section>
+
+<section>
+  <h2>TikTok LIVE chat</h2>
+  <div class="row">
+    <input id="tiktok" placeholder="your TikTok username, without @">
+    <button class="primary" onclick="setTiktok()">Connect chat</button>
+  </div>
+  <div class="row"><span id="chatst" class="hint">Theo answers comments from this LIVE. Likes, gifts and joins feed the show.</span></div>
+</section>
+
+<section>
+  <h2>Voice</h2>
+  <div class="row">
+    <select id="voice">
+      <option value="chatterbox:theo_ref">Theo expressive (local Chatterbox, laughs and sighs)</option>
+      <option value="edge:en-US-GuyNeural">Guy (US, energetic, English-only)</option>
+      <option value="edge:en-US-AndrewMultilingualNeural">Andrew (US, warm; multilingual, may switch language)</option>
+      <option value="edge:en-US-BrianMultilingualNeural">Brian (US, lively, approachable)</option>
+      <option value="edge:en-US-ChristopherNeural">Christopher (US, authoritative)</option>
+      <option value="edge:en-US-RogerNeural">Roger (US, lively)</option>
+      <option value="edge:en-GB-RyanNeural">Ryan (British)</option>
+      <option value="edge:en-GB-ThomasNeural">Thomas (British)</option>
+      <option value="edge:en-AU-WilliamMultilingualNeural">William (Australian)</option>
+      <option value="edge:en-KE-ChilembaNeural">Chilemba (Kenyan English)</option>
+      <option value="edge:en-NG-AbeoNeural">Abeo (Nigerian English)</option>
+      <option value="edge:en-ZA-LukeNeural">Luke (South African)</option>
+      <option value="edge:en-US-AvaMultilingualNeural">Ava (US, female)</option>
+      <option value="edge:en-US-EmmaMultilingualNeural">Emma (US, female)</option>
+      <option value="edge:en-GB-SoniaNeural">Sonia (British, female)</option>
+      <option value="kokoro:am_michael">Michael (local Kokoro, offline)</option>
+      <option value="kokoro:af_heart">Heart (local Kokoro, female)</option>
+    </select>
+    <button class="primary" onclick="setVoice()">Apply</button>
+    <button onclick="previewVoice()">Preview on stream</button>
+  </div>
+</section>
+
+<section>
+  <h2>Direct the show</h2>
+  <div class="row"><input id="topic" placeholder="Queue a lesson topic, e.g. bearish engulfing on EURUSD"><button onclick="inject()">Queue topic</button></div>
+  <div class="row"><input id="q" placeholder="Simulate a viewer question"><button onclick="ask()">Ask</button></div>
+</section>
+
+<section>
+  <h2>Events</h2>
+  <pre id="log"></pre>
+</section>
+
+<script>
+let ws;
+const $ = (s) => document.querySelector(s);
+const log = (m) => { const p = $("#log"); p.textContent = (new Date().toLocaleTimeString() + "  " + m + "\n" + p.textContent).slice(0, 20000); };
+function setStatus(ok, text) { const st = $("#st"); st.classList.toggle("ok", ok); st.classList.toggle("bad", !ok); $("#st-text").textContent = text; }
+function connect() {
+  ws = new WebSocket(`ws://${location.host}/ws/control`);
+  ws.onopen = () => setStatus(true, "connected");
+  ws.onclose = () => { setStatus(false, "disconnected"); setTimeout(connect, 1000); };
+  ws.onmessage = (e) => {
+    try { const m = JSON.parse(e.data); if (m.type === "status") { log(m.text); if (/^chat[: ]/.test(m.text)) $("#chatst").textContent = m.text; } else if (m.type === "state") { applyState(m); } else if (m.type !== "pong") log(m.type + " " + JSON.stringify(m).slice(0, 160)); }
+    catch (err) { log(e.data); }
+  };
+}
+function sendObj(o) { if (!ws || ws.readyState !== 1) { log("not connected"); return; } ws.send(JSON.stringify(o)); log("> " + JSON.stringify(o)); }
+function cmd(c) { sendObj({ type: "operator", cmd: c }); }
+let musicOnline = false;
+function applyState(m) {
+  if ("music_online" in m) { musicOnline = !!m.music_online; const b = $("#btn-music"); b.textContent = "Popular music: " + (musicOnline ? "ON" : "OFF"); b.classList.toggle("primary", musicOnline); }
+  if ("now_playing" in m) $("#np").textContent = m.now_playing ? "now playing: " + m.now_playing : "";
+}
+function toggleMusic() { sendObj({ type: "operator", cmd: "music_online", on: !musicOnline }); }
+function tf(t) { sendObj({ type: "operator", cmd: "tf", tf: t }); }
+function inject() { const v = $("#topic").value.trim(); if (v) sendObj({ type: "operator", cmd: "topic", text: v }); }
+function ask() { const v = $("#q").value.trim(); if (v) sendObj({ type: "operator", cmd: "ask", user: "@operator", text: v }); }
+function setTiktok() { const u = $("#tiktok").value.trim().replace(/^@/, ""); if (!u) return; sendObj({ type: "operator", cmd: "tiktok", username: u }); $("#chatst").textContent = "connecting to @" + u + "…"; }
+function setVoice() { const [engine, voice] = $("#voice").value.split(":"); sendObj({ type: "operator", cmd: "voice", engine, voice }); }
+function previewVoice() { const [engine, voice] = $("#voice").value.split(":"); sendObj({ type: "operator", cmd: "voice", engine, voice, preview: true }); }
+setInterval(() => { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: "ping" })); }, 20000);
+connect();
+</script>
+</body>
+</html>

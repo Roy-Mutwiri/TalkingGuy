@@ -1,0 +1,9 @@
+[project]
+name = "talking-trading-guy"
+version = "0.2.0"
+description = "AI trading teacher that streams on TikTok LIVE Studio"
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

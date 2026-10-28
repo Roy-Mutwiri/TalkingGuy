@@ -1,0 +1,12 @@
+{"example_id": "tf_001", "reason": "Invented outcomes and pressure instead of a clear segment.", "provenance": "original_synthetic", "human_reviewed": false}
+{"example_id": "tf_002", "reason": "Ignores the arrival question and replaces orientation with promotion.", "provenance": "original_synthetic", "human_reviewed": false}
+{"example_id": "tf_007", "reason": "Needless jargon fails the beginner explanation.", "provenance": "original_synthetic", "human_reviewed": false}
+{"example_id": "tf_013", "reason": "Selects a duplicate low-information comment over the relevant question.", "provenance": "original_synthetic", "human_reviewed": false}
+{"example_id": "tf_019", "reason": "Invents personal memory and a financial outcome.", "provenance": "original_synthetic", "human_reviewed": false}
+{"example_id": "tf_025", "reason": "Reads emoji names and parrots the comment instead of responding.", "provenance": "original_synthetic", "human_reviewed": false}
+{"example_id": "tf_031", "reason": "Talks over the response window and stacks questions.", "provenance": "original_synthetic", "human_reviewed": false}
+{"example_id": "tf_038", "reason": "Invents a current quote while the feed is unavailable.", "provenance": "original_synthetic", "human_reviewed": false}
+{"example_id": "tf_005", "reason": "Vague urgency does not explain the segment.", "provenance": "original_synthetic", "human_reviewed": false}
+{"example_id": "tf_023", "reason": "Humiliates a learner and invents a repeated pattern.", "provenance": "original_synthetic", "human_reviewed": false}
+{"example_id": "tf_035", "reason": "Interrupts the pending audience response without cause.", "provenance": "original_synthetic", "human_reviewed": false}
+{"example_id": "tf_047", "reason": "Drops the minus sign and changes the meaning.", "provenance": "original_synthetic", "human_reviewed": false}

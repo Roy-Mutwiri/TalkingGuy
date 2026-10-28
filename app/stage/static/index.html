@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Talking Trading Guy</title>
+<meta name="viewport" content="width=1080, initial-scale=1">
+<link rel="stylesheet" href="/stage/static/stage.css">
+<script src="/stage/static/vendor/lightweight-charts.standalone.production.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "/stage/static/vendor/three/build/three.module.js",
+  "three/addons/": "/stage/static/vendor/three/examples/jsm/",
+  "lightweight-charts": "/stage/static/vendor/lightweight-charts/lightweight-charts.standalone.production.mjs",
+  "lwc-plugins/": "/stage/static/vendor/lwc-plugins/"
+} }
+</script>
+</head>
+<body>
+<div id="stage">
+  <header id="topbar">
+    <div id="brand"><div class="mark">TTG</div><div><div class="name">Talking Trading Guy</div><div class="sub">Chart room · AI host</div></div></div>
+    <div id="lesson">
+      <div id="lesson-title">Getting ready…</div>
+      <div id="lesson-meta"><span id="module-chip">lesson</span><div id="progress-bar"><i></i></div><span id="progress"></span></div>
+    </div>
+    <div id="badges"><span id="pill-paused" class="pill warn hidden">Paused</span><span id="pill-muted" class="pill warn hidden">Muted</span><span class="pill live"><span class="dot"></span>Live</span></div>
+  </header>
+
+  <!-- TradingView-style chart window -->
+  <section id="tv">
+    <div id="tv-toolbar">
+      <div class="tv-group">
+        <div class="tv-symbol"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M10 2a8 8 0 1 0 4.9 14.3l5.4 5.4 1.4-1.4-5.4-5.4A8 8 0 0 0 10 2zm0 2a6 6 0 1 1 0 12 6 6 0 0 1 0-12z"/></svg><span id="symbol">—</span></div>
+        <span class="tv-sep"></span>
+        <div class="tv-tfs" id="tv-tfs"><button data-tf="1m">1m</button><button data-tf="5m">5m</button><button data-tf="15m">15m</button><button data-tf="1h">1h</button><button data-tf="4h">4h</button><button data-tf="1d">D</button><button data-tf="1w">W</button></div>
+        <span class="tv-sep"></span>
+        <button class="tv-btn" title="Candles"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M7 2h2v4h2v12H9v4H7v-4H5V6h2zm8 2h2v3h2v10h-2v5h-2v-5h-2V7h2z"/></svg></button>
+        <button class="tv-btn"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3 17l6-6 4 4 8-8v3l-8 8-4-4-6 6z"/></svg><span>Indicators</span></button>
+        <button class="tv-btn"><span>Alert</span></button>
+        <button class="tv-btn"><span>Replay</span></button>
+      </div>
+      <div class="tv-group right">
+        <span id="chart-note" class="tv-pill"></span>
+        <span id="mode-chip">LESSON</span>
+        <span class="tv-sep"></span>
+        <button class="tv-btn ic" title="Undo"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 5V2L7 7l5 5V9a6 6 0 1 1-6 6H4a8 8 0 1 0 8-10z"/></svg></button>
+        <button class="tv-btn ic" title="Layout"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="none" stroke="currentColor" stroke-width="2" d="M3 4h18v16H3zM12 4v16M3 12h9"/></svg></button>
+        <button class="tv-btn"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19 18H6a4 4 0 0 1-.6-8A6 6 0 0 1 17 8h1a5 5 0 0 1 1 10z"/></svg><span>Save</span></button>
+        <button class="tv-btn ic" title="Settings"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L15 3H9l-.3 2.6a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4L4.6 11a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 1.7 1L9 21h6l.3-2.6a7.6 7.6 0 0 0 1.7-1l2.4 1 2-3.4zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg></button>
+        <button class="tv-btn ic" title="Fullscreen"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3 3h7v2H5v5H3zm11 0h7v7h-2V5h-5zM3 14h2v5h5v2H3zm16 0h2v7h-7v-2h5z"/></svg></button>
+        <button class="tv-btn ic" title="Snapshot"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M9 3l-1.5 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.5L15 3zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg></button>
+        <button class="tv-publish">Publish</button>
+      </div>
+    </div>
+    <div id="tv-body">
+      <div id="tv-left">
+        <button class="on" title="Cursor"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 2l16 9-7 2-3 7z"/></svg></button>
+        <button title="Trend line"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 19l15-15 1.4 1.4-15 15z"/><circle cx="5" cy="19" r="2.2" fill="currentColor"/><circle cx="19" cy="5" r="2.2" fill="currentColor"/></svg></button>
+        <button title="Horizontal line"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 11h18v2H3z"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/></svg></button>
+        <button title="Fib"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 5h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg></button>
+        <button title="Rectangle"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M4 6h16v12H4z"/></svg></button>
+        <button title="Text"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M5 4h14v3h-2V6h-4v12h2v2H9v-2h2V6H7v1H5z"/></svg></button>
+        <button title="Measure"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M2 8h20v8H2zm2 2v4h2v-2h2v2h2v-2h2v2h2v-2h2v2h2v-2h2v2h2v-4z"/></svg></button>
+        <button title="Ray"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 20l15-15 1.4 1.4-15 15z"/><circle cx="4" cy="19" r="2.2" fill="currentColor"/><path fill="currentColor" d="M15 3h6v6h-2V6.4l-2.6 2.6-1.4-1.4L17.6 5H15z"/></svg></button>
+        <button title="Vertical line"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M11 3h2v18h-2z"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/></svg></button>
+        <button title="Channel"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 14L15 2l1.4 1.4-12 12zM8 22L20 10l1.4 1.4-12 12z"/></svg></button>
+        <button title="Regression"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M3 17L21 7M3 12L21 2M3 22l18-10"/></svg></button>
+        <button title="Pitchfork"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M3 20L14 9M9 9l6-6M9 15l10-10M14 9l4 4"/></svg></button>
+        <button title="Fib extension"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 4h18v2H3zm6 5h12v2H9zm0 5h12v2H9zm-6 5h18v2H3z"/><path fill="none" stroke="currentColor" stroke-width="1.5" d="M4 20l4-10 3 4"/></svg></button>
+        <button title="Arrow"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 20L18 6h-5V4h8v8h-2V7L5.4 21.4z"/></svg></button>
+        <button title="Brush"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M3 18c4 0 3-8 7-8s3 6 6 6 2-10 5-10"/></svg></button>
+        <span class="sp"></span>
+        <button title="Long position"><svg viewBox="0 0 24 24"><path fill="rgba(8,153,129,.35)" d="M3 4h18v8H3z"/><path fill="rgba(242,54,69,.35)" d="M3 12h18v5H3z"/><path fill="currentColor" d="M3 11h18v2H3z"/></svg></button>
+        <button title="Short position"><svg viewBox="0 0 24 24"><path fill="rgba(242,54,69,.35)" d="M3 7h18v5H3z"/><path fill="rgba(8,153,129,.35)" d="M3 12h18v8H3z"/><path fill="currentColor" d="M3 11h18v2H3z"/></svg></button>
+        <button title="Vol profile"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 4h8v3H3zm0 5h14v3H3zm0 5h18v3H3zm0 5h6v2H3z"/></svg></button>
+        <button title="Anchored VWAP"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M4 20c4-2 5-10 8-10s5 6 9 4"/><circle cx="4" cy="20" r="2.4" fill="currentColor"/></svg></button>
+        <button title="Alert"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6V11a6 6 0 0 0-5-5.9V4a1 1 0 0 0-2 0v1.1A6 6 0 0 0 6 11v5l-2 2v1h16v-1z"/></svg></button>
+        <span class="sp"></span>
+        <button title="Magnet"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 3h4v8a2 2 0 0 0 4 0V3h4v8a6 6 0 0 1-12 0zM6 3v4h4V3zm8 0v4h4V3z"/></svg></button>
+        <button title="Lock"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 10V7a5 5 0 0 1 10 0v3h1v11H6V10zm2 0h6V7a3 3 0 0 0-6 0z"/></svg></button>
+        <button title="Hide"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 5c5 0 9 4 10 7-1 3-5 7-10 7S3 15 2 12c1-3 5-7 10-7zm0 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg></button>
+        <button title="Remove"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 7h12l-1 14H7zM9 3h6v2h5v2H4V5h5z"/></svg></button>
+      </div>
+      <div id="note-editor" class="hidden">
+        <textarea id="ne-text" rows="2" placeholder="type your note… Enter = place, Shift+Enter = new line, Esc = cancel"></textarea>
+        <div class="ne-row">
+          <button id="ne-smaller" title="smaller text">A−</button><input id="ne-size" type="number" min="10" max="72" value="16" title="font size"><button id="ne-bigger" title="bigger text">A+</button>
+          <label title="text colour">text <input id="ne-color" type="color" value="#131722"></label>
+          <label title="background colour">box <input id="ne-bg" type="color" value="#ffffff"></label>
+          <label title="no background"><input id="ne-nobg" type="checkbox"> none</label>
+          <button id="ne-done" class="primary">Place</button><button id="ne-cancel">Cancel</button>
+        </div>
+      </div>
+      <div id="chart-wrap">
+        <div id="chart"></div>
+        <canvas id="overlay"></canvas>
+        <div id="legend"><span id="lg-sym">—</span><span id="lg-tf"></span><span id="lg-src">Swissquote</span>
+          <span class="lg-k">O</span><span id="lg-o" class="lg-v">—</span><span class="lg-k">H</span><span id="lg-h" class="lg-v">—</span>
+          <span class="lg-k">L</span><span id="lg-l" class="lg-v">—</span><span class="lg-k">C</span><span id="lg-c" class="lg-v">—</span><span id="lg-chg" class="lg-v"></span></div>
+        <div id="legend2"><span class="lg-k2">Vol</span><span id="lg-vol" class="lg-v">—</span><span class="lg-k2">EMA 20</span><span id="lg-ema" class="lg-v">—</span></div>
+        <div id="live-readout" class="hidden"><span class="lr-dot"></span><span id="lr-label">LIVE</span><span id="lr-price">—</span><span id="lr-chg"></span></div>
+      </div>
+      <div id="tv-right">
+        <button class="on" title="Watchlist"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 5h16v2H4zm0 6h16v2H4zm0 6h10v2H4z"/></svg></button>
+        <button title="Alerts"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6V11a6 6 0 0 0-5-5.9V4a1 1 0 0 0-2 0v1.1A6 6 0 0 0 6 11v5l-2 2v1h16v-1z"/></svg></button>
+        <button title="Hotlists"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M13 2s1 3 1 5a3 3 0 0 1-3 3 3 3 0 0 1-3-3c-3 2-4 5-4 8a8 8 0 0 0 16 0c0-6-7-13-7-13z"/></svg></button>
+        <button title="Calendar"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 2h2v2h6V2h2v2h3v18H4V4h3zm-1 8v10h12V10z"/></svg></button>
+        <button title="Data window"><svg viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M4 4h16v16H4zM4 9h16M9 9v11"/></svg></button>
+        <button title="Ideas"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2zm-3 17h6v2H9z"/></svg></button>
+        <button title="Chat"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h16v12H7l-3 3z"/></svg></button>
+        <span class="sp"></span>
+        <button title="Help"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 17a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm1.5-6.6V14h-3v-2.5c0-1.5 3-1.6 3-3.5a1.5 1.5 0 0 0-3 0h-3a4.5 4.5 0 1 1 9 0c0 2.6-3 2.9-3 4.4z"/></svg></button>
+      </div>
+    </div>
+    <div id="tv-tabs"><span class="on">Stock Screener</span><span>Pine Editor</span><span>Strategy Tester</span><span>Replay Trading</span><span>Trading Panel</span></div>
+    <div id="tv-footer">
+      <div class="tv-ranges"><button>1D</button><button>5D</button><button>1M</button><button>3M</button><button>6M</button><button>YTD</button><button>1Y</button><button>5Y</button><button>All</button></div>
+      <div class="tv-foot-right"><span id="tv-clock">00:00:00 (UTC)</span><span class="tv-sep"></span><span>%</span><span>log</span><span class="on">auto</span></div>
+    </div>
+  </section>
+
+  <section id="caption-band">
+    <div id="caption"></div>
+  </section>
+
+  <section id="room">
+    <div id="goal" class="hidden"><span id="goal-label">Likes 0 / 100</span><div class="bar"><i></i></div><span id="goal-viewers"></span></div>
+    <div id="hot" class="hidden"><span id="hot-sym">XAU/USD</span><span id="hot-pct">+0.00%</span><span class="hot-sub">in the last minute</span></div>
+  </section>
+
+  <div id="question-card" class="card hidden">
+    <div class="card-label"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h16v12H7l-3 3z"/></svg><span class="q-user">Question</span></div>
+    <div class="q-text"></div>
+  </div>
+  <div id="summary-card" class="card hidden">
+    <div class="card-label"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l2.4 6.6L21 9l-5 4.4L17.5 21 12 17.5 6.5 21 8 13.4 3 9l6.6-.4z"/></svg><span class="s-title">Takeaway</span></div>
+    <div class="s-text"></div>
+  </div>
+
+  <section id="bottom">
+    <div id="ask-hint"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h16v12H7l-3 3z"/></svg><span class="hint-title">Ask anything about charts.</span><span>Comments are read and answered live. Educational only, no signals.</span></div>
+    <div id="ticker"></div>
+  </section>
+
+  <!-- operator dock: appears only while the mouse moves over the stage, never part of the broadcast otherwise -->
+  <div id="dock">
+    <button id="btn-pause" title="Pause / resume (P)"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg><span>Pause</span></button>
+    <button id="btn-mute" title="Mute / unmute the voice (M)"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg><span>Mute</span></button>
+    <button id="btn-skip" title="Skip this beat (S)"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M5 4l10 8-10 8zm11 0h3v16h-3z"/></svg><span>Skip</span></button>
+    <span class="dock-hint">P · M · S</span>
+  </div>
+
+  <footer id="disclosure">
+    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5z"/></svg>
+    <span>AI-generated host · educational content only · not financial advice · markets involve risk</span>
+  </footer>
+</div>
+<script src="/stage/static/room.js"></script>
+<script type="module" src="/stage/static/stage.js"></script>
+</body>
+</html>

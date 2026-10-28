@@ -1,0 +1,25 @@
+# Core: everything the stream needs with the online voice (Edge). No GPU, no torch.
+# Local GPU voices (Chatterbox, Kokoro) are in requirements-gpu.txt; training scripts in requirements-training.txt.
+# The installer (TalkingGuy.exe) and the launcher's Update button install this file for you.
+numpy==2.5.4
+scipy==1.18.1
+sounddevice==0.5.6
+soundfile==0.14.0
+websockets==17.3
+httpx==0.28.1
+python-dotenv==1.2.4
+pydantic==2.14.1
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+python-multipart==0.0.32
+anthropic==2.3.0
+claude-agent-sdk==0.2.174
+supermemory==5.0.1
+TikTokLive==7.0.1
+yfinance==1.7.0
+edge-tts==7.3.1
+pywebview==6.2.1
+pythonnet==3.2.1
+psutil==7.2.2
+pytest==9.1.1
+pytest-asyncio==1.4.1

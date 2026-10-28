@@ -1,0 +1,12 @@
+# Only for the offline study/training scripts (scripts/style_from_streams.py, build_datasets.py, train_host_lora.py,
+# fetch_public_voices.py, make_music.py). Not needed to run the stream. Install on top of requirements-gpu.txt.
+transformers==5.21.0
+accelerate==1.15.0
+faster-whisper==1.2.1
+huggingface_hub==2.3.0
+pandas==3.1.0
+pyarrow==26.0.0
+yt-dlp==2026.10.26
+datasets
+peft
+trl

@@ -1,0 +1,20 @@
+[
+  {
+    "file": "libritts_3752.wav",
+    "speaker": "3752",
+    "pitch_hz": 117.1,
+    "words_per_s": 3.01,
+    "seconds": 8.6,
+    "source": "LibriTTS-R data/dev.clean/dev.clean-00000-of-00004.parquet (LibriVox public-domain reading), CC BY 4.0",
+    "text": "He seems to me to be truly penitent for his offences-a misguided, but not a hypocritical man, if my knowledge of human n"
+  },
+  {
+    "file": "libritts_2803.wav",
+    "speaker": "2803",
+    "pitch_hz": 112.1,
+    "words_per_s": 2.38,
+    "seconds": 8.4,
+    "source": "LibriTTS-R data/dev.clean/dev.clean-00000-of-00004.parquet (LibriVox public-domain reading), CC BY 4.0",
+    "text": "The heavy, lumpy sea strained her cordage, her timbers creaked, and she labored painfully in the trough of the sea."
+  }
+]

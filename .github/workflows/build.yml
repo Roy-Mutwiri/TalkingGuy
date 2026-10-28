@@ -1,0 +1,62 @@
+name: build
+
+# Every push to main: run the unit tests, build TalkingGuy.exe and publish it as the rolling "latest" release.
+# Users download one link forever: https://github.com/Roy-Mutwiri/TalkingGuy/releases/latest/download/TalkingGuy.exe
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pytest -q
+
+  exe:
+    runs-on: windows-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install pyinstaller
+      - run: powershell -ExecutionPolicy Bypass -File installer/build_exe.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TalkingGuy-exe
+          path: dist/TalkingGuy.exe
+      - name: Move the "latest" tag to this commit
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git tag -f latest
+          git push -f origin latest
+      - name: Publish rolling release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest build
+          body: |
+            Rolling build of the main branch (${{ github.sha }}).
+            Download **TalkingGuy.exe**, run it, and it installs or updates everything. Existing installs update from inside the app.
+          files: dist/TalkingGuy.exe
+          prerelease: false
+      - name: Publish versioned release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/TalkingGuy.exe
