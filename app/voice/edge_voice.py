@@ -26,6 +26,7 @@ import numpy as np
 
 from .kokoro_tts import find_output_device, split_sentences
 from .humanize_audio import humanize_sentence
+from .human import TalkClock, describe, plan_sentence
 from .player import play_queue
 
 log = logging.getLogger("voice")
@@ -56,9 +57,13 @@ def _seed(sentence: str) -> int:
 
 
 class EdgeSpeaker:
+    engine = "edge"                 # Edge sets pace itself (SSML rate); local engines get it from the human layer
+    plan_override: dict | None = None   # one-shot delivery override for the next speak() (e.g. {"murmur": True})
+
     def __init__(self, voice: str | None = None, device: str | None = None, rate: str = "+0%") -> None:
         import sounddevice as sd
 
+        self.clock = TalkClock()
         self.voice = voice or os.getenv("TTS_VOICE") or DEFAULT_VOICE
         if "-" not in self.voice:
             self.voice = DEFAULT_VOICE  # a Kokoro voice id was left in .env
@@ -240,6 +245,20 @@ class EdgeSpeaker:
                     _ctx.urgent = False
             return run
 
+        override, self.plan_override = self.plan_override, None
+        mood_now = self.mood
+        engine_rate = self.engine == "edge"
+
+        def deliver(i: int, s: str, a: np.ndarray, prev_len: int) -> np.ndarray:
+            rng = np.random.default_rng(_seed(s))
+            plan = plan_sentence(s, mood=mood_now, index=i, total=len(sentences), rng=rng, clock=self.clock,
+                                 engine_sets_rate=engine_rate, override=override)
+            out = humanize_sentence(a, self.out_rate, first=i == 0, long_prev=prev_len > 90, mood=mood_now, seed=_seed(s), plan=plan)
+            if a.size:
+                self.clock.note(out.size / self.out_rate)
+                log.debug("delivery: %s | %s", describe(plan), s[:60])
+            return out
+
         def producer():
             try:
                 # first sentence alone (fastest first audio), the rest concurrently
@@ -249,15 +268,15 @@ class EdgeSpeaker:
                 if len(sentences) > 1:
                     rest_thread = threading.Thread(target=_urgent(lambda: rest.extend(self.synth_many(sentences[1:]))), daemon=True)
                     rest_thread.start()
-                a0 = humanize_sentence(first[0], self.out_rate, first=True, long_prev=False, mood=self.mood, seed=_seed(sentences[0]))
+                a0 = deliver(0, sentences[0], first[0], 0)
                 audio_q.put((sentences[0], a0))
                 if rest_thread:
                     rest_thread.join()
                     prev_len = len(sentences[0])
-                    for s, a in zip(sentences[1:], rest):
+                    for i, (s, a) in enumerate(zip(sentences[1:], rest), start=1):
                         if self._stop.is_set():
                             break
-                        ah = humanize_sentence(a, self.out_rate, first=False, long_prev=prev_len > 90, mood=self.mood, seed=_seed(s))
+                        ah = deliver(i, s, a, prev_len)
                         audio_q.put((s, ah))
                         prev_len = len(s)
             except Exception as exc:  # noqa: BLE001

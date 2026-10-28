@@ -34,6 +34,53 @@ TAGS = {
     "considerate": ["okay?"],
 }
 THINKING = ["Let me look.", "Give me a second.", "Hmm.", "Let me check that."]
+RESTARTS = ["wait, let me say that again.", "no, let me start that again.", "hang on, say it properly.", "actually, let me rephrase."]
+_NUMBERISH = re.compile(r"\d")
+_SERIOUS = re.compile(r"\b(not financial advice|education|disclaimer|risk warning|invalidat)", re.I)
+
+
+class Imperfections:
+    """Rare, human slips: a repeated first word under momentum, a sentence abandoned and restarted.
+    Rate-limited across the whole stream: at most a few an hour, never two in a row, never on serious lines."""
+
+    def __init__(self, rng: random.Random | None = None) -> None:
+        self.rng = rng or random.Random()
+        self.last_false_start = 0.0
+        self.last_restart = 0.0
+        self.count = 0
+
+    def apply(self, text: str, mood: str = "teach", now: float | None = None) -> str:
+        import time as _t
+
+        now = _t.time() if now is None else now
+        if not text or mood in ("serious", "considerate") or _SERIOUS.search(text):
+            return text
+        sents = [s.strip() for s in _SENT.split(text.strip()) if s.strip()]
+        cands = [i for i, s in enumerate(sents) if len(s.split()) >= 8 and not _NUMBERISH.search(s) and not s.startswith("[")]
+        if not cands:
+            return text
+        # a restart: about one every 25 minutes of talking, and only on a long explanatory sentence
+        if now - self.last_restart > 1500 and self.rng.random() < 0.06:
+            i = self.rng.choice(cands)
+            words = sents[i].split()
+            cut = max(3, min(len(words) - 3, int(len(words) * (0.3 + self.rng.random() * 0.25))))
+            head = " ".join(words[:cut]).rstrip(",;:")
+            sents[i] = f"{head}... {self.rng.choice(RESTARTS)} {sents[i]}"
+            self.last_restart = now
+            self.count += 1
+            return " ".join(sents)
+        # a false start: a repeated first word, about one every 8 minutes, more under excitement
+        p = 0.10 if mood in ("hype", "excited", "show") else 0.06
+        if now - self.last_false_start > 480 and self.rng.random() < p:
+            i = self.rng.choice(cands)
+            words = sents[i].split()
+            w = words[0].rstrip(",")
+            if w.lower() in ("the", "this", "that", "so", "and", "it", "price", "if", "when", "look", "you", "we", "i"):
+                sents[i] = f"{w}, {w.lower()} " + " ".join(words[1:])
+                self.last_false_start = now
+                self.count += 1
+                return " ".join(sents)
+        return text
 
 
 def humanize_text(text: str, mood: str = "teach", seed: int | None = None) -> str:

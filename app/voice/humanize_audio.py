@@ -223,14 +223,20 @@ def room_tone(rate: int, seconds: float, level: float = 0.00025, rng=None) -> np
     return (noise / (np.max(np.abs(noise)) + 1e-6) * level).astype(np.float32)
 
 
-def humanize_sentence(audio: np.ndarray, rate: int, *, first: bool, long_prev: bool, mood: str = "teach", seed: int | None = None) -> np.ndarray:
+def humanize_sentence(audio: np.ndarray, rate: int, *, first: bool, long_prev: bool, mood: str = "teach", seed: int | None = None,
+                      plan=None) -> np.ndarray:
     """The sentence with a natural lead-in (sometimes a breath, always a small varying gap), the broadcast
     chain on the voice, and a short tail; levels are consistent sentence to sentence.
-    With a seed the result is repeatable (same sentence, same audio), which keeps the synthesis cache exact."""
+    With a seed the result is repeatable (same sentence, same audio), which keeps the synthesis cache exact.
+    With a `plan` (voice/human.py) the delivery follows it: pace, beat before, level, mic distance, noises."""
     if audio.size == 0:
         return audio
     rng = np.random.default_rng(seed) if seed is not None else _rng
     voice = mic_chain(audio, rate)
+    if plan is not None:
+        from .human import render
+
+        return render(voice, rate, plan, rng, first=first, long_prev=long_prev, mood=mood)
     parts = []
     p_breath = 0.5 if (first or long_prev) else 0.18
     if mood in ("hype", "excited"):

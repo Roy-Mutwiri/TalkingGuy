@@ -14,6 +14,7 @@ import asyncio
 import json
 import logging
 import random
+import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -37,7 +38,8 @@ from .data.market_hours import next_change, primary_symbol, session_name
 from .data.service import DataService, WATCHLIST
 from .data.sources import pretty_symbol
 from .data.store import TF_SECONDS
-from .voice.disfluency import humanize_text
+from .voice.disfluency import Imperfections, humanize_text
+from .voice.human import MURMURS
 from .voice.pronounce import humanize
 from .data.analysis import analyze
 
@@ -110,6 +112,11 @@ class Director:
         self._recent_lines: dict[str, list[str]] = {}
         self._music_base: float | None = None
         self.nonverbal = NonVerbal(energy=ENERGY)
+        self.slips = Imperfections()
+        self._interrupt_hot = None          # a big live move that arrived while a lesson line was being spoken
+        self._last_interrupt = 0.0
+        self._in_lesson_speech = False
+        self._last_murmur = 0.0
 
     # ------------------------------------------------------------------ persistence
     def _load_history(self) -> dict[str, float]:
@@ -308,10 +315,28 @@ class Director:
             self._music_base = self.music.level
         self.music.set_level(min(0.5, self._music_base * 1.6) if on else self._music_base)
 
-    async def say(self, text: str, mood: str | None = None) -> None:
+    _NAME_FIRST = re.compile(r"^(@?[A-Za-z][A-Za-z0-9_.]{1,23}),\s+(?=[a-z])")
+
+    async def murmur(self) -> None:
+        """A quiet word to himself while drawing or waiting ("mm", "okay", "right, so"), at most every half minute."""
+        if not self.speaker or self.muted or time.time() - self._last_murmur < 30:
+            return
+        self._last_murmur = time.time()
+        try:
+            self.speaker.plan_override = {"murmur": True}
+            async for ev in self.speaker.speak(random.choice(MURMURS)):
+                if ev["event"] == "level":
+                    await self.send({"type": "mouth", "level": ev["level"] * 0.5})
+            await self.send({"type": "mouth", "level": 0})
+        except Exception as exc:  # noqa: BLE001
+            log.debug("murmur: %s", exc)
+
+    async def say(self, text: str, mood: str | None = None, *, lesson: bool = False) -> None:
         text = " ".join(text.split())
         if not text:
             return
+        # a name first, then a beat, then the answer: "Maria. Short answer..." (its own tiny sentence = its own gap)
+        text = self._NAME_FIRST.sub(lambda m: f"{m.group(1)}. ", text, count=1)
         rep = deai_clean(text)
         if rep.fixes:
             log.info("deai: %d fix(es) %s | %s", rep.count, rep.fixes[:4], text[:90])
@@ -337,18 +362,37 @@ class Director:
         self.recent_says = self.recent_says[-12:]
         cur_mood = getattr(self.speaker, "mood", "teach") if self.speaker else "teach"
         from .voice.tags import strip as _strip_tags
+        from .voice.kokoro_tts import split_sentences as _split
         spoken = humanize_text(humanize(text), cur_mood)
+        spoken = self.slips.apply(spoken, cur_mood)
         if not getattr(self.speaker, "expressive", False):
             spoken = _strip_tags(spoken)
         if self.speaker and not self.muted:
-            async for ev in self.speaker.speak(spoken):
-                if ev["event"] == "sentence":
-                    await self.send({"type": "caption", "text": _strip_tags(ev["text"]), "duration_ms": ev["duration_ms"]})
-                elif ev["event"] == "level":
-                    await self.send({"type": "mouth", "level": ev["level"]})
-                elif ev["event"] == "error":
-                    await self.status(f"voice error: {ev['error']}")
+            sents = _split(spoken)
+            idx = -1
+            cut_at: int | None = None
+            self._in_lesson_speech = lesson
+            try:
+                async for ev in self.speaker.speak(spoken):
+                    if ev["event"] == "sentence":
+                        idx += 1
+                        await self.send({"type": "caption", "text": _strip_tags(ev["text"]), "duration_ms": ev["duration_ms"]})
+                        # a real move on the live chart mid-lesson: break off like a person would, react, then come back
+                        hot = self._interrupt_hot
+                        if lesson and hot is not None and time.time() - hot.ts < 25 and idx >= 1 and len(sents) - idx >= 2 \
+                                and time.time() - self._last_interrupt > 600:
+                            cut_at = idx
+                            self.speaker.stop()
+                    elif ev["event"] == "level":
+                        await self.send({"type": "mouth", "level": ev["level"]})
+                    elif ev["event"] == "error":
+                        await self.status(f"voice error: {ev['error']}")
+            finally:
+                self._in_lesson_speech = False
             await self.send({"type": "mouth", "level": 0})
+            if cut_at is not None:
+                await self._interrupt_for_move(sents[cut_at:])
+                return
         else:
             dur = int(len(spoken.split()) / 2.6 * 1000)
             await self.send({"type": "caption", "text": _strip_tags(spoken), "duration_ms": dur})
@@ -356,6 +400,25 @@ class Director:
         if self.music:
             self.music.duck(False)
         self.last_speech_end = time.time()
+
+    async def _interrupt_for_move(self, remaining: list[str]) -> None:
+        """He stopped mid-sentence because the chart moved: react in the moment, then pick the thread back up."""
+        hot, self._interrupt_hot = self._interrupt_hot, None
+        self._last_interrupt = time.time()
+        if hot is None:
+            return
+        q = getattr(self.quotes, "latest", {}).get(hot.symbol) if self.quotes is not None else None
+        price = fmt_price(q["price"]) if q else fmt_price(hot.price)
+        await self.send({"type": "react", "kind": "glance", "side": "center"})
+        opener = random.choice(["Hold on, hold on.", "Wait, look at that.", "Oh, hang on.", "Okay, stop, look at this."])
+        where = "up" if hot.direction == "up" else "down"
+        await self.say(f"{opener} {spoken_symbol(hot.symbol)} just moved {abs(hot.pct):.2f} percent {where} in a minute, {price} now. "
+                       f"That is a real move while we're talking. Watch where this candle closes before you read anything into it.", mood="excited")
+        if self.memory is not None:
+            self.memory.remember(f"Live move mid-lesson: {hot.symbol} {hot.pct:+.2f}% to {price}", kind="event")
+        await asyncio.sleep(0.6)
+        back = random.choice(["Okay. Where was I.", "Right, back to it.", "Okay, so, as I was saying.", "Anyway."])
+        await self.say(back + " " + " ".join(remaining), mood="teach")
 
     def prefetch(self, text: str) -> None:
         if self.speaker and hasattr(self.speaker, "prefetch") and text:
@@ -941,10 +1004,12 @@ class Director:
             await self.react("type")
             if say and narrate and narrated < max_narrated:
                 narrated += 1
-                await self.say(say)
+                await self.say(say, lesson=True)
                 if self.memory is not None and narrated <= 3:
                     self.memory.remember(f"On {self.current_symbol or 'the chart'} Haddan said: {say[:220]}", kind="said", meta={"symbol": self.current_symbol or ""})
             else:
+                if random.random() < 0.22:
+                    await self.murmur()          # thinking out loud while the pen moves
                 await asyncio.sleep(pace)
 
     async def _auto_markup(self, candles: list[dict]) -> None:
@@ -1035,6 +1100,8 @@ class Director:
                 hot = self.moves.feed(msg["symbol"], float(msg["price"]), now)
                 if hot and (hot.symbol == self.current_symbol or abs(hot.pct) >= 2 * showman.MOVE_THRESHOLDS.get(hot.symbol, 0.3)):
                     self.hot_events = [h for h in self.hot_events if now - h.ts < HOT_EVENT_TTL_S][-1:] + [hot]
+                    if self._in_lesson_speech and hot.symbol == self.current_symbol and abs(hot.pct) >= 1.5 * showman.MOVE_THRESHOLDS.get(hot.symbol, 0.3):
+                        self._interrupt_hot = hot      # big enough to break off a sentence for
                     await self.send({"type": "hot", "symbol": hot.symbol, "pct": hot.pct, "price": hot.price})
                     await self.send({"type": "react", "kind": "hype"})
             if msg["type"] == "quote" and now - last_ticker > 1.0:

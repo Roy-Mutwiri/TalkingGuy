@@ -21,13 +21,13 @@ _SENT = re.compile(r"(?<=[.!?])\s+")
 
 # per mood: probability of adding a sound to an utterance, and the weighted sound palette
 MOOD_PALETTE: dict[str, tuple[float, dict[str, float]]] = {
-    "excited": (0.55, {"laugh": 0.6, "chuckle": 0.4}),
-    "hype": (0.45, {"laugh": 0.5, "chuckle": 0.5}),
-    "cheerful": (0.40, {"chuckle": 0.6, "laugh": 0.4}),
-    "show": (0.25, {"chuckle": 0.6, "clear throat": 0.2, "laugh": 0.2}),
-    "warm": (0.20, {"chuckle": 1.0}),
-    "curious": (0.15, {"chuckle": 0.5, "clear throat": 0.5}),
-    "teach": (0.12, {"chuckle": 0.5, "clear throat": 0.3, "sniff": 0.2}),
+    "excited": (0.30, {"laugh": 0.4, "chuckle": 0.6}),
+    "hype": (0.25, {"laugh": 0.3, "chuckle": 0.7}),
+    "cheerful": (0.22, {"chuckle": 0.8, "laugh": 0.2}),
+    "show": (0.15, {"chuckle": 0.7, "clear throat": 0.3}),
+    "warm": (0.12, {"chuckle": 1.0}),
+    "curious": (0.08, {"chuckle": 0.5, "clear throat": 0.5}),
+    "teach": (0.07, {"chuckle": 0.5, "clear throat": 0.3, "sniff": 0.2}),
     "considerate": (0.50, {"sigh": 1.0}),
     "calm": (0.10, {"clear throat": 1.0}),      # sighs come from real cues (a loss, a boring chart) or the considerate mood only
     "serious": (0.0, {}),
@@ -48,7 +48,7 @@ RECAP = re.compile(r"\b(recap|lock it in|take home|bottom line|summing up)\b", r
 
 
 class NonVerbal:
-    def __init__(self, min_gap_s: float = 35.0, energy: float = 0.85, rng: random.Random | None = None) -> None:
+    def __init__(self, min_gap_s: float = 75.0, energy: float = 0.85, rng: random.Random | None = None) -> None:
         self.min_gap_s = min_gap_s
         self.energy = max(0.0, min(1.0, energy))
         self.rng = rng or random.Random()
