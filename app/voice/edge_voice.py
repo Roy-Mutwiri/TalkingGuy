@@ -333,7 +333,7 @@ class EdgeSpeaker:
                     words_left = sum(len(s.split()) for s in pending)
                     need = self.rtf * (words_left / 2.6) - a0.size / self.out_rate
                     if pending and need > 0.3:
-                        rest_thread.join(timeout=min(need, 3.5))
+                        rest_thread.join(timeout=min(need, 2.0))
                 audio_q.put((sentences[0], a0))
                 if rest_thread:
                     rest_thread.join()

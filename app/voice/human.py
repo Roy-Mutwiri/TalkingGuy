@@ -144,7 +144,7 @@ def plan_sentence(sentence: str, *, mood: str = "teach", index: int = 0, total: 
         p.contour = "continue"
     else:
         p.contour = "statement"
-    p.key_st = (float(rng.random()) - 0.5) * 1.2
+    p.key_st = 0.0                                  # the pitch is the host's own, always
     p.strength = 0.9 + float(rng.random()) * 0.5
     # mouth noises: rare, never on an aside or a murmur
     if not p.aside and rng.random() < 0.07:
@@ -252,9 +252,10 @@ def pitch_shift(x: np.ndarray, rate: int, semitones: float) -> np.ndarray:
     return z.astype(np.float32)
 
 
-def shape_intonation(y: np.ndarray, rate: int, contour: str, strength: float, key_st: float) -> np.ndarray:
-    """Give the sentence a melodic shape: a question rises, a statement lands and trails off, a continuation holds,
-    an emphasis sentence leans on its first words. Small amounts (under 3 semitones), with level following emphasis."""
+def shape_intonation(y: np.ndarray, rate: int, contour: str, strength: float, key_st: float, pitch: bool = False) -> np.ndarray:
+    """Shape the LOUDNESS of the sentence the way a speaker does: lean on the stress, trail off at the end of a statement,
+    lift at the end of a question. Pitch is left exactly as the voice engine produced it: shifting pitch by resampling moves
+    the resonances of the voice too, and that reads as a different person. The host's timbre is never touched."""
     if y.size < int(rate * 0.35) or contour not in CONTOURS:
         return y
     st_c, db_c = CONTOURS[contour]
@@ -263,8 +264,9 @@ def shape_intonation(y: np.ndarray, rate: int, contour: str, strength: float, ke
     xf = int(rate * 0.015)
     for i in range(len(bounds) - 1):
         seg = y[bounds[i]:bounds[i + 1]]
-        st = max(-3.0, min(3.0, st_c[i] * strength + key_st))
-        seg = pitch_shift(seg, rate, st)
+        if pitch:
+            st = max(-3.0, min(3.0, st_c[i] * strength + key_st))
+            seg = pitch_shift(seg, rate, st)
         seg = (seg * 10 ** (db_c[i] * strength / 20)).astype(np.float32)
         parts.append(seg)
     out = parts[0]

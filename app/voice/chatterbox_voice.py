@@ -154,20 +154,14 @@ class ChatterboxSpeaker(EdgeSpeaker):
         lifts a lot, the risk line and asides settle. Turbo ignores this; the full and multilingual models use it."""
         from .human import ASIDE_RE, EXCITE_RE, POINT_RE, RISK_RE
 
-        e = MOOD_PARAMS.get(mood, MOOD_PARAMS["teach"])[0]
-        if text.strip().endswith("?"):
-            e += 0.10
-        if EXCITE_RE.search(text):
-            e += 0.25
-        if POINT_RE.search(text):
-            e += 0.12
-        if RISK_RE.search(text):
-            e -= 0.12
-        if ASIDE_RE.search(text):
-            e -= 0.10
-        if len(text.split()) <= 4:
-            e += 0.08
-        return float(max(0.25, min(0.95, e)))
+        # kept narrow on purpose: a wide swing in exaggeration changes the character of the voice from line to line,
+        # which the host hears as "not my voice". The words move it a little; the timbre stays his.
+        e = 0.5
+        if EXCITE_RE.search(text) or text.strip().endswith("?"):
+            e += 0.06
+        if RISK_RE.search(text) or ASIDE_RE.search(text):
+            e -= 0.06
+        return float(max(0.42, min(0.58, e)))
 
     def _synth_one(self, text: str) -> np.ndarray:
         from scipy.signal import resample_poly
