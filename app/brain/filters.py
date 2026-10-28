@@ -18,7 +18,8 @@ RULES: list[tuple[str, re.Pattern]] = [
     ("guarantee", re.compile(r"\b(guarantee[ds]?|risk[- ]free|can'?t lose|cannot lose|never loses|100% (win|sure|certain|accurate))\b", re.I)),
     ("income", re.compile(r"\b(make|earn|made|earned)\s+\$?\d[\d,]*\s*(a|per|each|every)?\s*(day|week|month|year)\b", re.I)),
     ("income", re.compile(r"\b(get rich|passive income|quit your job|financial freedom in)\b", re.I)),
-    ("solicitation", re.compile(r"\b(dm me|message me|join my|my telegram|my discord|whatsapp|link in (my )?bio|sign ?up (link|here)|use my code|referral)\b", re.I)),
+    ("solicitation", re.compile(r"\b(dm me|message me|whatsapp|sign ?up (link|here)|use my code|referral|vip (group|channel|room)|paid (group|channel|room)|premium (group|channel|signals))\b", re.I)),
+    ("solicitation", re.compile(r"^(?![^.!?]*\b(no|not|never|zero|nobody|isn't|aren't|don't|doesn't|won't|without|leave the|nowhere|instead of)\b)[^.!?]*(\b(telegram|discord|group|channel|room)\b[^.!?]{0,60}\b(signals?|calls?|entries|setups to take)\b|\b(signals?|calls?|entries)\b[^.!?]{0,60}\b(telegram|discord|group|channel|room)\b)", re.I)),
     ("advice", re.compile(r"\b(you should (buy|sell|invest in|put your money)|i recommend (buying|selling|investing))\b", re.I)),
 ]
 

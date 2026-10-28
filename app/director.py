@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import random
 import re
 import time
@@ -39,6 +40,7 @@ from .data.service import DataService, WATCHLIST
 from .data.sources import pretty_symbol
 from .data.store import TF_SECONDS
 from .voice.disfluency import Imperfections, humanize_text
+from .brain.community import Community
 from .voice.human import MURMURS
 from .voice.pronounce import humanize
 from .data.analysis import analyze
@@ -112,6 +114,7 @@ class Director:
         self._recent_lines: dict[str, list[str]] = {}
         self._music_base: float | None = None
         self.nonverbal = NonVerbal(energy=ENERGY)
+        self.community = Community(self.picker, enabled=os.getenv("COMMUNITY_MENTIONS", "1") != "0")
         self.slips = Imperfections()
         self._interrupt_hot = None          # a big live move that arrived while a lesson line was being spoken
         self._last_interrupt = 0.0
@@ -562,6 +565,8 @@ class Director:
         now = time.time()
         if now - self.last_hook > HOOK_EVERY_S and self.current_title:
             await self.say(self.picker.pick("hook", topic=self.current_title.lower()), mood="hype")
+            if self.community.due_in_hook(now):
+                await self.say(self.community.line(), mood="warm")
             self.last_hook = time.time()
         elif now - self.last_prompt > 240:
             answers = await self.ask_audience(self.picker.pick("chat_prompt"), wait_s=20.0 if self.chat.connected else 3.0, mood="warm")
@@ -1265,6 +1270,8 @@ class Director:
                             await self.show_live_chart()
                             await self.send({"type": "mode", "value": "live"})
                             await self.say(self.picker.pick("bridge"), mood="warm")
+                            if self.community.due_between_lessons():
+                                await self.say(self.community.line(), mood="warm")
                             await self.social_moments()
                             await self.answer_questions(3, max_rank=2)
                             await self.deliver_promises()

@@ -196,7 +196,7 @@ def reply_for(c: Comment, state: HostState, rng: random.Random | None = None) ->
     if AI_RE.search(text):
         return HostDecision("respond", c.id, f"{lead}fair question. I'm Haddan, the voice you're hearing in the chart room right now. The charts are real, the analysis is real, nothing here is advice. Ask me anything about the chart.", "calm", None, "ai disclosure")
     if PREDICT_RE.search(text):
-        return HostDecision("respond", c.id, f"{lead}I don't predict and I don't signal, that's the deal here. What I can tell you is where the idea would be wrong: find the level behind the move, and if price trades through it, the story is over.", "calm", None, "deflect prediction")
+        return HostDecision("respond", c.id, f"{lead}I don't predict and I don't signal, that's the deal here, on stream and in the Telegram group. What I can tell you is where the idea would be wrong: find the level behind the move, and if price trades through it, the story is over.", "calm", None, "deflect prediction")
     if PRICE_ASK_RE.search(text) and no_quote:
         return HostDecision("respond", c.id, f"{lead}I don't have a fresh quote right now, so I won't attach a number to this. We can keep working on the example, and I'll say when the feed is back.", "calm", None, "missing quote")
     if RESULT_CLAIM_RE.search(text):

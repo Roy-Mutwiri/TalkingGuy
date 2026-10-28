@@ -29,6 +29,16 @@ Last checked: 26 October 2026. Sources: TikTok Community Guidelines (effective 2
 - `scripts/make_music.py` generates original beats locally (`--style arabic` for oud, darbuka, khaleeji, shaabi and dabke flavoured instrumentals) in the styles that travel on TikTok (afrobeats, amapiano, reggaeton, melodic trap, phonk, dance pop). They are ours, nothing to match.
 - If you want recognisable human-made tracks, use a library whose license explicitly names TikTok LIVE streaming (Epidemic Sound and similar sell that), and keep the license file.
 
+## 2b. The community group (Telegram)
+
+The Chart Room has a free Telegram group for discussion, follow-up questions and chart screenshots. Haddan mentions it
+on a schedule (`app/brain/community.py`: at most once between lessons every ~30 minutes and once inside a newcomer hook
+every ~50 minutes, a hundred different wordings, none repeated within a day). Every mention says what the group is not:
+no signals, no calls, no paid anything, nobody tells anyone what to trade. That promise is what keeps the mention inside
+TikTok's financial rules; the moment the group shares trade calls, the mentions become the thing that gets the LIVE
+ended and the account struck, and the compliance filter in `app/brain/filters.py` is written to block any sentence that
+pairs a group with signals. `COMMUNITY_MENTIONS=0` in `.env` turns the mentions off.
+
 ## 3. Financial content
 
 TikTok prohibits promoting financial scams, "get-rich-quick" schemes, guaranteed returns, and treats crypto and forex promotion as restricted. Educational content is the permitted lane. The host never gives signals, targets, predictions or income claims (system prompt plus a regex filter), never links out, and says "not financial advice" on screen at all times.

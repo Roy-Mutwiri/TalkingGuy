@@ -10,6 +10,8 @@ import json
 import random
 from pathlib import Path
 
+from .community import LINES as COMMUNITY_LINES
+
 STATE = Path("data_cache/phrase_history.json")
 
 BANKS: dict[str, list[str]] = {
@@ -155,10 +157,11 @@ BANKS: dict[str, list[str]] = {
         "Okay, countdown. Ten seconds until the live chart. Get your calls in.",
     ],
     "ai_honest": [
-        "Straight talk for a second: I don't run a signal group, I don't take DMs, and I'm not selling a course. The chart is the whole product.",
+        "Straight talk for a second: I don't run a signal group, I don't take DMs, and I'm not selling a course. The Telegram group is for talking charts, nothing else. The chart is the whole product.",
         "Honesty corner. I don't know where price goes next, and neither does anyone selling you certainty. We work with levels and where the idea is wrong.",
         "One thing about this room: nobody here is going to tell you what to buy. I show you how to read it, you own the decision.",
     ],
+    "community": COMMUNITY_LINES,
     "hint": [
         "{hint}",
         "[chuckle] No pressure. {hint}",
@@ -208,11 +211,12 @@ class Picker:
 
     def pick(self, bank: str, **fmt) -> str:
         options = BANKS[bank]
-        used = self.history.get(bank, [])[-min(self.memory, len(options) - 1):] if len(options) > 1 else []
+        memory = 90 if bank == "community" else self.memory       # the community mention must not repeat its wording within a day
+        used = self.history.get(bank, [])[-min(memory, len(options) - 1):] if len(options) > 1 else []
         choices = [i for i in range(len(options)) if i not in used] or list(range(len(options)))
         i = random.choice(choices)
         self.history.setdefault(bank, []).append(i)
-        self.history[bank] = self.history[bank][-50:]
+        self.history[bank] = self.history[bank][-120:]
         try:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             self.path.write_text(json.dumps(self.history))
