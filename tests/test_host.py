@@ -158,8 +158,8 @@ def test_nonverbal_tags_round_trip():
 
     raw = "[laughs] Sam, you spotted it! BTCUSDT at 79961 [ sighs ] no rush. [weird thing] done."
     spoken = humanize(raw)
-    assert "[laugh]" in spoken and "[sigh]" in spoken and "weird" not in spoken and "79,961" in spoken
-    assert strip(spoken) == "Sam, you spotted it! Bitcoin at 79,961 no rush. done."
+    assert "[laugh]" in spoken and "[sigh]" in spoken and "weird" not in spoken and "seventy-nine thousand nine sixty-one" in spoken
+    assert strip(spoken) == "Sam, you spotted it! Bitcoin at seventy-nine thousand nine sixty-one no rush. done."
     assert normalize("[Chuckles] ok [clears throat]") == "[chuckle] ok [clear throat]" and has_tags("[gasp]") and not has_tags("plain")
 
 
@@ -206,3 +206,15 @@ def test_deai_scrubs_known_tells():
     ok = "Good question, Sam. Mark the key level first, then use 2x leverage only if the stop is tight."
     assert clean(ok).text == ok and tells_in(ok) == []
     assert clean("It's not about the pattern, it's about the level.").text.lower().startswith("it's the level")
+
+
+def test_prices_read_like_a_trader():
+    from app.voice.pronounce import humanize, trader_number
+
+    assert trader_number("4,243") == "forty-two forty-three"
+    assert trader_number("4050", "9") == "forty fifty point nine"
+    assert trader_number("4,000") == "four thousand" and trader_number("4,100") == "forty-one hundred"
+    assert trader_number("3,907") == "thirty-nine oh seven"
+    assert trader_number("80,654") == "eighty thousand six fifty-four" and trader_number("80,600") == "eighty thousand six hundred"
+    assert humanize("EURUSD at 1.0850") == "euro dollar at 1.0850"          # forex quotes stay as they are
+    assert humanize("RSI at 71") == "R S I at 71"                            # small numbers untouched

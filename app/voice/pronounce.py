@@ -34,6 +34,48 @@ _ticker_rx = re.compile(r"\b(" + "|".join(sorted(map(re.escape, _TICKERS), key=l
 _jargon_rx = re.compile(r"\b(" + "|".join(sorted(map(re.escape, _JARGON), key=len, reverse=True)) + r")\b")
 _tf_rx = re.compile(r"\b(" + "|".join(sorted(map(re.escape, _TF), key=len, reverse=True)) + r")\b(?=\s*(chart|timeframe|candle|candles|bar|bars|close|closes|,|\.|$))")
 _bigint_rx = re.compile(r"(?<![\d.,])(\d{4,6})(?!\d|\.\d|,\d|%)")
+_price_rx = re.compile(r"(?<![\d.,])(\d{1,3}(?:,\d{3})+|\d{4,5})(?:\.(\d+))?(?![\d,])(?!%)")
+
+_ONES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen",
+         "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"]
+_TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+
+
+def _w99(n: int) -> str:
+    return _ONES[n] if n < 20 else _TENS[n // 10] + ("" if n % 10 == 0 else "-" + _ONES[n % 10])
+
+
+def _w999(n: int) -> str:
+    if n < 100:
+        return _w99(n)
+    return _ONES[n // 100] + " hundred" + ("" if n % 100 == 0 else " " + _w99(n % 100))
+
+
+def trader_number(whole: str, frac: str | None = None) -> str:
+    """How a trader says a price out loud: 4,243 -> "forty-two forty-three", 4,050 -> "forty fifty", 4,000 -> "four thousand",
+    4,100 -> "forty-one hundred", 3,907 -> "thirty-nine oh seven", 80,654 -> "eighty thousand six fifty-four",
+    80,600 -> "eighty thousand six hundred", 4,050.9 -> "forty fifty point nine"; years read the same way (2025 -> twenty twenty-five)."""
+    n = int(whole.replace(",", ""))
+    if n >= 100000 or n < 1000:
+        words = f"{n:,}"
+    elif n < 10000:
+        a, b = n // 100, n % 100
+        if b == 0:
+            words = _w99(a // 10) + " thousand" if a % 10 == 0 else _w99(a) + " hundred"
+        else:
+            words = _w99(a) + " " + (_w99(b) if b >= 10 else "oh " + _ONES[b])
+    else:
+        th, rem = n // 1000, n % 1000
+        if rem == 0:
+            words = _w99(th) + " thousand"
+        elif rem < 100:
+            words = _w99(th) + " thousand " + (_w99(rem) if rem >= 10 else "and " + _ONES[rem])
+        else:
+            words = _w99(th) + " thousand " + _ONES[rem // 100] + (" hundred" if rem % 100 == 0 else " " + (_w99(rem % 100) if rem % 100 >= 10 else "oh " + _ONES[rem % 100]))
+    if frac:
+        digits = " ".join("oh" if d == "0" else _ONES[int(d)] for d in frac[:4])
+        words += " point " + digits
+    return words
 _k_rx = re.compile(r"\b(\d+(?:\.\d+)?)[kK]\b")
 _pct_rx = re.compile(r"(\d)\s*%")
 _x_rx = re.compile(r"\b(\d+(?:\.\d+)?)x\b")
@@ -59,7 +101,8 @@ def humanize(text: str) -> str:
     t = _tf_rx.sub(lambda m: _TF[m.group(1)], t)
     t = _jargon_rx.sub(lambda m: _JARGON[m.group(1)], t)
     t = _k_rx.sub(lambda m: f"{m.group(1)} thousand", t)
-    t = _bigint_rx.sub(lambda m: f"{int(m.group(1)):,}", t)   # 79961 -> 79,961 (read as a number, not digits)
+    t = _price_rx.sub(lambda m: trader_number(m.group(1), m.group(2)), t)   # 4,243 -> "forty-two forty-three", like a trader
+    t = _bigint_rx.sub(lambda m: f"{int(m.group(1)):,}", t)   # anything left (six digits) -> 123,456 read as a number
     t = _pct_rx.sub(r"\1 percent", t)
     t = _x_rx.sub(r"\1 times", t)
     t = re.sub(r"\s+-\s+", ", ", t)          # " - " dashes become a breath

@@ -125,6 +125,9 @@ class ChatterboxSpeaker(EdgeSpeaker):
             wav = model.generate(text, audio_prompt_path=self.voice, temperature=temp)   # Turbo ignores exaggeration/cfg (and warns per call)
         a = wav.squeeze().detach().cpu().numpy().astype(np.float32)
         dt = time.time() - t0
+        secs = a.size / self.model_sr
+        if secs > 0.8:                                   # running estimate of synthesis speed (seconds of work per second of audio)
+            self.rtf = 0.75 * getattr(self, "rtf", 0.8) + 0.25 * (dt / secs)
         if dt > 0.5:
             log.info("chatterbox synth: %.1fs audio in %.1fs (x%.2f)", a.size / self.model_sr, dt, dt / max(a.size / self.model_sr, 0.1))
         if self.model_sr != self.out_rate:

@@ -689,6 +689,7 @@ class Director:
         self._music_lift(True)
         t0 = time.time()
         hinted = False
+        filled = False
         try:
             while time.time() - t0 < wait_s:
                 await asyncio.sleep(1.0)
@@ -696,7 +697,11 @@ class Director:
                     break
                 if len(self.chat.answer_sink) >= 3 and time.time() - t0 > 8:
                     break
-                if not hinted and wait_s >= 15 and time.time() - t0 >= 9 and not self.chat.answer_sink:
+                # a person does not stand in silence while the room thinks: one easy line at five seconds, the hint later
+                if not filled and wait_s >= 15 and time.time() - t0 >= 5 and not self.chat.answer_sink:
+                    filled = True
+                    await self.say(self.picker.pick("wait_filler"), mood="warm")
+                if not hinted and wait_s >= 15 and time.time() - t0 >= 12 and not self.chat.answer_sink:
                     hinted = True
                     await self.say(self.picker.pick("hint", hint=hint_for(question)), mood="curious")
         finally:
@@ -845,7 +850,11 @@ class Director:
                     await self.status(f"chart action failed: {exc}")
             nxt = script.beats[i].say if i < len(script.beats) else (script.quiz.question if script.quiz else "")
             self.prefetch(nxt)
-            await self.say(beat.say)
+            if i + 1 < len(script.beats):
+                self.prefetch(script.beats[i + 1].say)         # two beats ahead: the voice is never waiting on the GPU
+            if beat.ask:
+                self.prefetch(beat.ask)
+            await self.say(beat.say, lesson=True)
             if beat.ask and not self.skip_lesson:
                 answers = await self.ask_audience(beat.ask, wait_s=20.0 if self.chat.connected else 4.0, mood="curious")
                 winner = self._first_correct(answers, (script.quiz.answer if script.quiz else "") + " " + beat.ask)

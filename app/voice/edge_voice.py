@@ -65,6 +65,7 @@ class EdgeSpeaker:
         import sounddevice as sd
 
         self.clock = TalkClock()
+        self.rtf = 0.35                 # synthesis seconds per audio second (Edge: network); local engines measure their own
         self.voice = voice or os.getenv("TTS_VOICE") or DEFAULT_VOICE
         if "-" not in self.voice:
             self.voice = DEFAULT_VOICE  # a Kokoro voice id was left in .env
@@ -324,6 +325,15 @@ class EdgeSpeaker:
                     rest_thread = threading.Thread(target=_urgent(lambda: rest.extend(self.synth_many(sentences[1:]))), daemon=True)
                     rest_thread.start()
                 a0 = deliver(0, sentences[0], first[0], 0)
+                if rest_thread:
+                    # fluency: when the engine is slower than playback, hold the first sentence briefly so the rest gets
+                    # ahead; a short delay before a line beats a stall in the middle of it. Cached lines never wait.
+                    with self._cache_lock:
+                        pending = [s for s in sentences[1:] if s not in self._cache]
+                    words_left = sum(len(s.split()) for s in pending)
+                    need = self.rtf * (words_left / 2.6) - a0.size / self.out_rate
+                    if pending and need > 0.3:
+                        rest_thread.join(timeout=min(need, 3.5))
                 audio_q.put((sentences[0], a0))
                 if rest_thread:
                     rest_thread.join()

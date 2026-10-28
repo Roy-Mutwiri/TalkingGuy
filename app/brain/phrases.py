@@ -162,6 +162,15 @@ BANKS: dict[str, list[str]] = {
         "One thing about this room: nobody here is going to tell you what to buy. I show you how to read it, you own the decision.",
     ],
     "community": COMMUNITY_LINES,
+    "wait_filler": [
+        "Take your time, I'm watching the chat.",
+        "No rush. Look at the chart while you think.",
+        "I'll give you a second. It's right there on the screen.",
+        "Think about it. Where would you put it?",
+        "Have a look. The answer is on the chart, not in your head.",
+        "I'm reading as you type.",
+        "Go on, first instinct. We'll check it together.",
+    ],
     "hint": [
         "{hint}",
         "[chuckle] No pressure. {hint}",
