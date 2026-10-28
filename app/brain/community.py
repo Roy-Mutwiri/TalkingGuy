@@ -99,8 +99,8 @@ LINES = [
     "Market's slow right now. Good time to tell you about the Telegram group: it's where the chart reviews happen when the stream is quiet. Education only. {join}",
     # honesty framing
     "Full honesty about the Telegram group: it won't make you money. It'll make you better at reading a chart, which is a different thing and the only thing I can actually offer. {join}",
-    "I'll say what the Telegram group is not. Not a signal service, not a paid room, not a place anyone tells you what to do with your money. It's a classroom that never closes. {join}",
-    "If a group promises signals, leave. If a group argues about where a level belongs, stay. Ours is the second kind. {join}",
+    "I'll say what the Telegram group is not. Not a signal service, not a room anyone pays for, not a place anyone tells you what to do with your money. It's a classroom that never closes. {join}",
+    "If a group promises signals, leave, ours never will. If a group argues about where a level belongs, stay. Ours is the second kind. {join}",
     "The Telegram group has exactly the same rules as this stream. Nobody predicts, nobody calls, everyone learns. {join}",
     # inviting participation
     "The best threads in the Telegram group start with a bad chart. Post your worst one. I mean it. {join}",

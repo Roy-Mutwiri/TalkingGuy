@@ -10,7 +10,7 @@ from app.brain.phrases import BANKS, Picker
 
 BAD = re.compile(r"\b(vip|premium|paid|guarantee\w*|profit\w*|income|get rich|dm me|whatsapp|buy now|sell now|entry at|take profit)\b", re.I)
 TELEGRAM = re.compile(r"telegram|group", re.I)
-NOT_SIGNALS = re.compile(r"signal|calls?|tip|education only|discussion only|nobody|what to (buy|trade|do)|advice|instructions|direction|not (a|for) tak|same rules?|allergic|argu|eyes", re.I)
+NOT_SIGNALS = re.compile(r"signal|\bcalls?\b|tip|education only|discussion only|nobody|what to (buy|trade|do)|advice|instructions|direction|not (a|for) tak|same rules?|allergic|argu|eyes", re.I)
 
 
 def test_hundred_distinct_lines():
