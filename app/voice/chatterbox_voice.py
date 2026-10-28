@@ -21,7 +21,7 @@ from .edge_voice import EdgeSpeaker, FETCH_TIMEOUT_S
 
 log = logging.getLogger("voice")
 os.environ.setdefault("TQDM_DISABLE", "1")      # the model prints token progress bars; not in a 24/7 log
-DEFAULT_REF = Path(__file__).resolve().parent / "ref" / "theo_ref.wav"
+DEFAULT_REF = Path(__file__).resolve().parent / "ref" / "haddan_own_a.wav"
 
 # mood -> (exaggeration, cfg_weight, temperature). Exaggeration raises intensity; cfg_weight 0.5 keeps pace natural.
 MOOD_PARAMS = {

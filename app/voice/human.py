@@ -266,12 +266,17 @@ def render(voice: np.ndarray, rate: int, plan: Plan, rng: np.random.Generator, *
         if mood in ("hype", "excited"):
             p_breath += 0.15
         want_breath = bool(rng.random() < p_breath)
-    if plan.inhale:
-        parts.append(inhale(rate, rng))
-        parts.append(room_tone(rate, 0.05 + float(rng.random()) * 0.05, rng=rng))
-    elif want_breath:
-        parts.append(breath(rate, rng=rng))
-        parts.append(room_tone(rate, 0.03 + float(rng.random()) * 0.05, rng=rng))
+    if plan.inhale or want_breath:
+        from . import sfx
+
+        real = sfx.get("inhale" if plan.inhale else "breath", rate) if sfx.available() else None
+        if real is not None:
+            parts.append(real)
+        elif plan.inhale:
+            parts.append(inhale(rate, rng))
+        else:
+            parts.append(breath(rate, rng=rng))
+        parts.append(room_tone(rate, 0.03 + float(rng.random()) * 0.06, rng=rng))
     parts.append(y)
     parts.append(room_tone(rate, 0.04 + float(rng.random()) * 0.10 + plan.post_gap, rng=rng))
     return np.concatenate(parts).astype(np.float32)

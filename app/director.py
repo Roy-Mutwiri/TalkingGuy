@@ -317,10 +317,17 @@ class Director:
             return
         self._last_murmur = time.time()
         try:
-            self.speaker.plan_override = {"murmur": True}
-            async for ev in self.speaker.speak(random.choice(MURMURS)):
-                if ev["event"] == "level":
-                    await self.send({"type": "mouth", "level": ev["level"] * 0.5})
+            from .voice import sfx
+            clip = sfx.get("murmur", self.speaker.out_rate) if sfx.available() and hasattr(self.speaker, "play_audio") else None
+            if clip is not None:
+                async for ev in self.speaker.play_audio(clip, "murmur"):
+                    if ev["event"] == "level":
+                        await self.send({"type": "mouth", "level": ev["level"] * 0.5})
+            else:
+                self.speaker.plan_override = {"murmur": True}
+                async for ev in self.speaker.speak(random.choice(MURMURS)):
+                    if ev["event"] == "level":
+                        await self.send({"type": "mouth", "level": ev["level"] * 0.5})
             await self.send({"type": "mouth", "level": 0})
         except Exception as exc:  # noqa: BLE001
             log.debug("murmur: %s", exc)

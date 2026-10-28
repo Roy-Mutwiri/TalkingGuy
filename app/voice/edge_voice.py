@@ -27,6 +27,7 @@ import numpy as np
 from .kokoro_tts import find_output_device, split_sentences
 from .humanize_audio import humanize_sentence
 from .human import TalkClock, describe, plan_sentence
+from . import sfx
 from .player import play_queue
 
 log = logging.getLogger("voice")
@@ -223,10 +224,51 @@ class EdgeSpeaker:
         threading.Thread(target=work, daemon=True).start()
 
     # ---- playback --------------------------------------------------------------
+    async def play_audio(self, audio: np.ndarray, label: str = "") -> AsyncIterator[dict]:
+        """Play a ready clip (a recorded murmur, a laugh) through the same player, with the same level events."""
+        if audio is None or audio.size == 0:
+            return
+        self._stop.clear()
+        loop = asyncio.get_running_loop()
+        events: asyncio.Queue = asyncio.Queue()
+        audio_q: queue.Queue = queue.Queue()
+        emit = lambda ev: loop.call_soon_threadsafe(events.put_nowait, ev)  # noqa: E731
+        audio_q.put((label, np.asarray(audio, dtype=np.float32)))
+        audio_q.put(None)
+
+        def consumer():
+            try:
+                with self._lock:
+                    play_queue(self._player(), audio_q, self._stop, emit, self.out_rate, self.out_chunk, self.gain, lambda: False)
+            except Exception as exc:  # noqa: BLE001
+                emit({"event": "error", "error": str(exc)})
+            finally:
+                emit({"event": "done"})
+
+        threading.Thread(target=consumer, daemon=True).start()
+        while True:
+            ev = await events.get()
+            yield ev
+            if ev["event"] == "done":
+                break
+
     async def speak(self, text: str) -> AsyncIterator[dict]:
         sentences = split_sentences(text)
         if not sentences:
             return
+        # the host's own recorded laughs / sighs stand in for tags at the edges of a sentence
+        edges: list[tuple[list[str], list[str]]] = []
+        if getattr(self, "expressive", False) and sfx.available():
+            stripped = []
+            for s in sentences:
+                lead, body, tail = sfx.split_edge_tags(s)
+                if body:
+                    stripped.append(body); edges.append((lead, tail))
+                else:
+                    stripped.append(s); edges.append(([], []))
+            sentences = stripped
+        else:
+            edges = [([], []) for _ in sentences]
         self._stop.clear()
         loop = asyncio.get_running_loop()
         events: asyncio.Queue = asyncio.Queue()
@@ -254,6 +296,19 @@ class EdgeSpeaker:
             plan = plan_sentence(s, mood=mood_now, index=i, total=len(sentences), rng=rng, clock=self.clock,
                                  engine_sets_rate=engine_rate, override=override)
             out = humanize_sentence(a, self.out_rate, first=i == 0, long_prev=prev_len > 90, mood=mood_now, seed=_seed(s), plan=plan)
+            lead, tail = edges[i] if i < len(edges) else ([], [])
+            if a.size and (lead or tail):
+                parts = []
+                for fam in lead:
+                    clip = sfx.get(fam, self.out_rate)
+                    if clip is not None:
+                        parts += [clip, sfx.gap(self.out_rate, 0.12)]
+                parts.append(out)
+                for fam in tail:
+                    clip = sfx.get(fam, self.out_rate)
+                    if clip is not None:
+                        parts += [sfx.gap(self.out_rate, 0.10), clip]
+                out = np.concatenate(parts).astype(np.float32)
             if a.size:
                 self.clock.note(out.size / self.out_rate)
                 log.debug("delivery: %s | %s", describe(plan), s[:60])

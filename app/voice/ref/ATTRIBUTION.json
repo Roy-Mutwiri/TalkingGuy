@@ -16,5 +16,24 @@
     "seconds": 8.4,
     "source": "LibriTTS-R data/dev.clean/dev.clean-00000-of-00004.parquet (LibriVox public-domain reading), CC BY 4.0",
     "text": "The heavy, lumpy sea strained her cordage, her timbers creaked, and she labored painfully in the trough of the sea."
+  },
+  {
+    "file": "haddan_own_a.wav",
+    "speaker": "Haddan (the host)",
+    "seconds": 11.6,
+    "source": "The host's own recording, 2026-10-28 ('Haddan My First Record'), 7.25-18.90 s",
+    "text": "Okay, look at this. Gold pushed into the level ... third, the close is back inside."
+  },
+  {
+    "file": "haddan_own_b.wav",
+    "speaker": "Haddan (the host)",
+    "seconds": 10.2,
+    "source": "The host's own recording, 2026-10-28, 23.45-33.65 s",
+    "text": "The stop goes where the idea is wrong ... type it in the chat, I'll wait."
+  },
+  {
+    "file": "sfx/*.wav",
+    "speaker": "Haddan (the host)",
+    "source": "The host's own recording, 2026-10-28: laughs, chuckle, sighs, groan, breaths, murmurs (see sfx/index.json)"
   }
 ]

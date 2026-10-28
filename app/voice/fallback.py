@@ -55,6 +55,16 @@ class FallbackSpeaker:
                 except Exception:  # noqa: BLE001
                     pass
 
+    @property
+    def out_rate(self) -> int:
+        return getattr(self.active, "out_rate", 48000)
+
+    async def play_audio(self, audio, label: str = ""):
+        sp = self.active
+        if hasattr(sp, "play_audio"):
+            async for ev in sp.play_audio(audio, label):
+                yield ev
+
     def prefetch(self, text: str) -> None:
         sp = self.active
         if hasattr(sp, "prefetch"):

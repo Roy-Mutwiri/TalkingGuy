@@ -1,0 +1,149 @@
+{
+ "source": "Haddan My First Record.mp3 (the host's own recording, 2026-10-28)",
+ "samples": {
+  "breath_in": {
+   "seconds": 1.45,
+   "peak_db": -13.4,
+   "from": [
+    0.05,
+    1.5
+   ]
+  },
+  "breath_slow": {
+   "seconds": 1.25,
+   "peak_db": -20.6,
+   "from": [
+    21.95,
+    23.2
+   ]
+  },
+  "breathing": {
+   "seconds": 3.1,
+   "peak_db": -32.5,
+   "from": [
+    87.3,
+    90.4
+   ]
+  },
+  "laugh_small": {
+   "seconds": 0.8,
+   "peak_db": -1.4,
+   "from": [
+    90.45,
+    91.25
+   ]
+  },
+  "laugh_medium": {
+   "seconds": 1.35,
+   "peak_db": -0.3,
+   "from": [
+    91.95,
+    93.3
+   ]
+  },
+  "laugh_big": {
+   "seconds": 1.6,
+   "peak_db": -0.4,
+   "from": [
+    93.8,
+    95.4
+   ]
+  },
+  "sigh_short": {
+   "seconds": 0.7,
+   "peak_db": -13.3,
+   "from": [
+    95.7,
+    96.4
+   ]
+  },
+  "sigh_long": {
+   "seconds": 0.55,
+   "peak_db": -16.0,
+   "from": [
+    96.9,
+    97.45
+   ]
+  },
+  "laugh_warm": {
+   "seconds": 1.25,
+   "peak_db": -1.0,
+   "from": [
+    34.05,
+    35.3
+   ]
+  },
+  "chuckle": {
+   "seconds": 0.7,
+   "peak_db": -11.7,
+   "from": [
+    39.45,
+    40.15
+   ]
+  },
+  "groan": {
+   "seconds": 0.75,
+   "peak_db": -12.2,
+   "from": [
+    76.7,
+    77.45
+   ]
+  },
+  "murmur_hmm": {
+   "seconds": 0.8,
+   "peak_db": -18.8,
+   "from": [
+    79.7,
+    80.5
+   ]
+  },
+  "murmur_mm_hm": {
+   "seconds": 1.6,
+   "peak_db": -9.2,
+   "from": [
+    80.9,
+    82.5
+   ]
+  },
+  "murmur_okay": {
+   "seconds": 0.65,
+   "peak_db": -7.5,
+   "from": [
+    82.75,
+    83.4
+   ]
+  },
+  "murmur_right_so": {
+   "seconds": 1.1,
+   "peak_db": -4.8,
+   "from": [
+    83.65,
+    84.75
+   ]
+  },
+  "murmur_yeah": {
+   "seconds": 0.45,
+   "peak_db": -6.7,
+   "from": [
+    85.0,
+    85.45
+   ]
+  },
+  "murmur_there": {
+   "seconds": 0.55,
+   "peak_db": -6.7,
+   "from": [
+    85.6,
+    86.15
+   ]
+  },
+  "murmur_let_me_see": {
+   "seconds": 0.6,
+   "peak_db": -11.9,
+   "from": [
+    86.35,
+    86.95
+   ]
+  }
+ }
+}

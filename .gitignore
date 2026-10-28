@@ -29,4 +29,4 @@ training/streamer_style/urls.txt
 # personal recordings never go to the public repo
 My Voice*/
 *.mp3
-app/voice/ref/haddan_*.wav
+app/voice/voice_training/
