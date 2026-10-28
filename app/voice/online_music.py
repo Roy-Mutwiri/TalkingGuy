@@ -11,12 +11,12 @@ is still that song's composition and would be matched.
     src = OnlineMusic()
     path, label = src.next_file()      # downloads the next trending track into data_cache/online_music/, returns it
 
-Chart: tuned to hip-hop and afrobeats. Two sources, interleaved one after the other: the Hip-Hop/Rap trending
-chart of the week in chart order (most popular first), and the most-played tracks found by searching afrobeats /
-afrobeat / amapiano / afropop (Audius has no afrobeats chart). Re-fetched every 15 minutes so a track that climbs
-is picked up within the quarter hour; the same track is not repeated until the list has been played through.
-Change the mix with MUSIC_ONLINE_GENRES (comma list of Audius trending genres) and MUSIC_ONLINE_SEARCH (comma list
-of search words) in .env. Downloads keep at most KEEP_FILES files in the cache.
+Chart: the worldwide Audius trending chart ("all"), the Hip-Hop/Rap, Pop, Electronic and Dancehall charts, and the
+most-played tracks found by searching afrobeats / amapiano / afropop / tiktok / viral (artists tag their own TikTok
+sounds). All lists are interleaved one track each, most popular first, and re-fetched every 10 minutes so a track
+that climbs is picked up fast; nothing repeats until the list has been played through. Change the mix with
+MUSIC_ONLINE_GENRES (comma list of Audius trending genres, "all" = every genre) and MUSIC_ONLINE_SEARCH (comma
+list of search words) in .env. Downloads keep at most KEEP_FILES files in the cache.
 """
 from __future__ import annotations
 
@@ -36,15 +36,12 @@ log = logging.getLogger("music")
 API_ROOT = "https://api.audius.co"
 APP_NAME = "chartroom"
 CHART_LIMIT = 100
-REFRESH_S = 15 * 60                   # real-time enough: the chart itself moves over hours
+REFRESH_S = 10 * 60                   # the chart itself moves over hours; 10 minutes keeps us current
 MIN_S, MAX_S = 75, 540                # skip jingles and very long mixes
 KEEP_FILES = 12
 SKIP_TITLE = re.compile(r"\b(remix|rmx|edit|bootleg|mashup|mash-up|cover|flip|rework|re-work|mix|sped.?up|speed.?up|slowed|nightcore|snippet|snipet|preview|teaser|intro|episode|type beat|instrumental)\b", re.I)
-# search hits (afrobeats side) must really be afro music and in a fitting genre; the search itself is fuzzy
-AFRO_WORDS = re.compile(r"afro|amapiano|naija|highlife|hiplife|alt[eé]|lagos|nigeria|ghana|kenya|south ?africa", re.I)
-SEARCH_GENRES = {"Hip-Hop/Rap", "World", "Afrobeats", "R&B/Soul", "Pop", "Electronic", "House", "Dancehall", "Trap", "Lo-Fi"}
-GENRES = [g.strip() for g in os.getenv("MUSIC_ONLINE_GENRES", "Hip-Hop/Rap").split(",") if g.strip()]
-SEARCHES = [q.strip() for q in os.getenv("MUSIC_ONLINE_SEARCH", "afrobeats,afrobeat,amapiano,afropop").split(",") if q.strip()]
+GENRES = [g.strip() for g in os.getenv("MUSIC_ONLINE_GENRES", "all,Hip-Hop/Rap,Pop,Electronic,Dancehall").split(",") if g.strip()]
+SEARCHES = [q.strip() for q in os.getenv("MUSIC_ONLINE_SEARCH", "afrobeats,afrobeat,amapiano,afropop,tiktok,viral").split(",") if q.strip()]
 
 
 class OnlineMusic:
@@ -74,19 +71,20 @@ class OnlineMusic:
         return random.choice(self._hosts)
 
     @staticmethod
-    def _ok(t: dict, search_hit: bool = False) -> bool:
+    def _ok(t: dict, query: str | None = None) -> bool:
         title = str(t.get("title") or "")
         dur = int(t.get("duration") or 0)
         if not (t.get("id") and t.get("is_streamable", True) and MIN_S <= dur <= MAX_S and not SKIP_TITLE.search(title)):
             return False
-        if search_hit:
-            blob = " ".join(str(t.get(k) or "") for k in ("title", "tags", "genre", "description"))
-            return str(t.get("genre") or "") in SEARCH_GENRES and bool(AFRO_WORDS.search(blob))
+        if query:
+            blob = " ".join(str(t.get(k) or "") for k in ("title", "tags", "genre", "description")).lower()
+            word = re.sub(r"[^a-z0-9]", "", query.lower())
+            return word in re.sub(r"[^a-z0-9 ]", "", blob).replace(" ", "") if word else True
         return True
 
     def _trending(self, host: str, genre: str | None) -> list[dict]:
         params = {"app_name": APP_NAME, "time": self.time_range, "limit": CHART_LIMIT}
-        if genre:
+        if genre and genre.lower() != "all":
             params["genre"] = genre
         r = self._client.get(f"{host}/v1/tracks/trending", params=params, timeout=30.0)
         r.raise_for_status()
@@ -95,7 +93,7 @@ class OnlineMusic:
     def _search(self, host: str, query: str) -> list[dict]:
         r = self._client.get(f"{host}/v1/tracks/search", params={"app_name": APP_NAME, "query": query, "limit": 100}, timeout=30.0)
         r.raise_for_status()
-        return [t for t in (r.json().get("data") or []) if self._ok(t, search_hit=True)]
+        return [t for t in (r.json().get("data") or []) if self._ok(t, query=query)]
 
     @staticmethod
     def _interleave(lists: list[list[dict]]) -> list[dict]:
@@ -126,7 +124,7 @@ class OnlineMusic:
                     log.warning("online music: search %s failed (%s)", q, exc)
             lists.append(sorted(hits.values(), key=lambda t: -int(t.get("play_count") or 0)))
         tracks = self._interleave(lists)
-        if not tracks and not GENRES:
+        if not tracks:
             tracks = self._trending(host, None)
         fresh = [t for t in tracks if t["id"] not in self._played]
         if not fresh:                        # everything has been played: start over
