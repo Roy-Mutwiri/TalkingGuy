@@ -29,8 +29,9 @@ The app folder is a git checkout of this repository. The launcher checks GitHub 
 pulled, changed packages are installed, and the stream restarts. Nothing is ever reinstalled, and the exe does not
 change. Tick *Install updates automatically* if you prefer hands-off updates while the stream is stopped.
 
-Each push to `main` also rebuilds `TalkingGuy.exe` (GitHub Actions) and republishes it as the *latest* release,
-so a brand new PC always gets the current installer from the same link.
+`TalkingGuy.exe` itself rarely changes (it only bootstraps the checkout). When it does, `installer\publish_release.ps1`
+rebuilds it and republishes the *latest* release; the GitHub Actions workflow does the same automatically on every
+push once Actions are enabled on the account. A brand new PC always gets the current installer from the same link.
 
 ## For developers (run from source)
 
