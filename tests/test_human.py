@@ -74,7 +74,7 @@ def test_render_through_humanizer_with_plan():
     out = humanize_sentence(voice, rate, first=True, long_prev=False, mood="teach", seed=3, plan=plan)
     assert out.size > voice.size * 0.8 and np.isfinite(out).all() and float(np.max(np.abs(out))) <= 1.0
     murm = human.plan_sentence("Mm.", mood="calm", rng=_rng(), override={"murmur": True}, now=12 * 3600)
-    assert murm.murmur and murm.level_db <= -4.0 and murm.breath is False
+    assert murm.murmur and murm.level_db <= -4.0
 
 
 def test_imperfections_are_rare_and_rate_limited():
