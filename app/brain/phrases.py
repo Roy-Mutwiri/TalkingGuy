@@ -162,6 +162,17 @@ BANKS: dict[str, list[str]] = {
         "One thing about this room: nobody here is going to tell you what to buy. I show you how to read it, you own the decision.",
     ],
     "community": COMMUNITY_LINES,
+    "drawing": [
+        "Give me a second, I'm marking the swings.",
+        "Let me get these levels on the chart.",
+        "Bear with me, this part is the drawing.",
+        "Watch the pen. Every line here is a decision.",
+        "I'm putting the zones in. Lines are opinions, zones are honest.",
+        "One more level and you'll see the shape of it.",
+        "Hang on, almost done drawing. Then I'll read it to you.",
+        "I'm marking the highs and lows first. Everything else hangs on them.",
+        "Pen's moving. Keep your eye on the right edge, that's where it matters.",
+    ],
     "wait_filler": [
         "Take your time, I'm watching the chat.",
         "No rush. Look at the chart while you think.",

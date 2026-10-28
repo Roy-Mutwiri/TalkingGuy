@@ -872,7 +872,7 @@ class Director:
                 self._lesson_candles = self._last_loaded
             if (beat.deep or (i == max(2, len(script.beats) - 2) and not getattr(self, "_deep_done", False))) and getattr(self, "_lesson_candles", None):
                 self._deep_done = True
-                await self.deep_markup(self._lesson_candles, narrate=True, max_narrated=6)
+                await self.deep_markup(self._lesson_candles, narrate=True, max_narrated=9, pace=0.8)
             await asyncio.sleep(beat.pause_ms / 1000)
             await self.hot_moments()
             await self.answer_questions(1, max_rank=0)
@@ -991,6 +991,7 @@ class Director:
         await self.status(f"deep markup: {len(steps)} drawings")
         self.mood("teach")
         narrated = 0
+        silent_steps = 0
         nxt_say = [s.get("say") for s in steps if s.get("say")]
         cur_layer, cur_ids = None, []
         for st in steps:
@@ -1020,7 +1021,11 @@ class Director:
                 if self.memory is not None and narrated <= 3:
                     self.memory.remember(f"On {self.current_symbol or 'the chart'} Haddan said: {say[:220]}", kind="said", meta={"symbol": self.current_symbol or ""})
             else:
-                if random.random() < 0.22:
+                silent_steps += 1
+                if silent_steps >= 4 and time.time() - self.last_speech_end > 7:
+                    silent_steps = 0
+                    await self.say(self.picker.pick("drawing"), mood="calm")     # a person narrates what the pen is doing
+                elif random.random() < 0.22:
                     await self.murmur()          # thinking out loud while the pen moves
                 await asyncio.sleep(pace)
 
