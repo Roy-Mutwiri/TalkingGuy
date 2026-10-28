@@ -1,6 +1,6 @@
 """LLM-free lesson builder used when there is no API key (offline mode) or the API fails.
 
-It follows Theo's lesson arc (teaching.md): hook, plain words + analogy, point at it on the live chart,
+It follows Haddan's lesson arc (teaching.md): hook, plain words + analogy, point at it on the live chart,
 the story, what confirms it and where it is wrong, the mistake, a check question to the chat, recap.
 It still uses real market data: a genuine example of the lesson's pattern on the chart of the hour
 (gold while forex is open, Bitcoin otherwise), with narration drawn from banks that never repeat back to back.

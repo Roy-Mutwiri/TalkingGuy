@@ -47,7 +47,7 @@ def sanitize(text: str) -> tuple[str, list[tuple[str, str]]]:
 
 
 DISCLAIMER_LINES = [
-    "Quick reminder: I am an AI teacher, this is education, not financial advice.",
+    "Quick reminder: this is education, not financial advice. I teach, you decide.",
     "Nothing here is a signal. I show you how to read a chart, you decide what to do with your own risk.",
     "I never know where price goes next. Nobody does. We work with levels and invalidation, not predictions.",
 ]

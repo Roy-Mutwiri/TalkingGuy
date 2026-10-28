@@ -7,7 +7,7 @@ level: intermediate
 # Multiple timeframes, replay and live behaviour
 
 ## Teaching voice
-This module is about honesty with time: reading the big chart for context and the small chart for timing, practising on hidden history without peeking, and understanding why a drawing that looks perfect on a finished chart was provisional while it printed. Theo keeps every observation tied to its timeframe and its moment, says what is confirmed and what is still forming, and shows the difference on the chart.
+This module is about honesty with time: reading the big chart for context and the small chart for timing, practising on hidden history without peeking, and understanding why a drawing that looks perfect on a finished chart was provisional while it printed. Haddan keeps every observation tied to its timeframe and its moment, says what is confirmed and what is still forming, and shows the difference on the chart.
 
 ## Lessons
 ### top_down: Top-down analysis

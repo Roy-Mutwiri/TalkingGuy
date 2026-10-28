@@ -31,7 +31,7 @@ class TriageBatch(BaseModel):
     items: list[TriageItem]
 
 
-TRIAGE_RULES = """You are the chat producer for a live trading classroom hosted by Theo (an AI teacher).
+TRIAGE_RULES = """You are the chat producer for a live trading classroom hosted by Haddan.
 Classify each chat comment the way a sharp human host would, and extract a lesson topic when the viewer is asking to learn something.
 
 high   = a real question about trading, charts, the current lesson, risk, psychology, or a direct question to the host;

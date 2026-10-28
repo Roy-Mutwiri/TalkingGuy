@@ -26,9 +26,9 @@ Streams analysed: 10
 - orients newcomers: 7
 - laughs / self-deprecating: 2
 
-## What Theo takes from this
+## What Haddan takes from this
 
 - Cadence: the host talks most of the time, asks the chat something every few minutes, and greets people by name constantly.
 - Energy: short reactions on real events, laughter at himself, never dead air for long.
 - Continuity: callbacks to earlier moments and to viewers; orientation for newcomers.
-- Theo paraphrases the technique in a trading-education context; no catchphrases, voice or identity are copied.
+- Haddan paraphrases the technique in a trading-education context; no catchphrases, voice or identity are copied.

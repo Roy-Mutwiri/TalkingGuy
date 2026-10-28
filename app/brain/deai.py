@@ -1,4 +1,4 @@
-"""Scrub AI-writing tells out of anything Theo says.
+"""Scrub AI-writing tells out of anything Haddan says.
 
 Based on Wikipedia's "Signs of AI writing" (vocabulary, copula avoidance, negative parallelism, summary
 endings, sycophantic openers, chatbot artifacts, em dashes) plus the usual LLM marketing vocabulary.

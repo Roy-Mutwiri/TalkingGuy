@@ -7,12 +7,12 @@ Stages (each resumable, outputs under training/streamer_style/):
   download   audio only (yt-dlp, m4a)                     -> audio/<id>.m4a
   transcribe faster-whisper on the GPU, with timestamps  -> transcripts/<id>.jsonl  (start, end, text)
   analyze    cadence and interaction statistics           -> style_profile.json, style_report.md
-  demos      ORIGINAL demonstrations in Theo's voice,     -> demos.jsonl  (same schema as the streamer pack)
+  demos      ORIGINAL demonstrations in Haddan's voice,     -> demos.jsonl  (same schema as the streamer pack)
              written by Claude from technique excerpts; no verbatim phrases, trading-education context
 
 What the stream is used for: how often he asks the chat something, how fast he talks, how he greets,
 how he calls back to viewers, how he keeps energy up in quiet stretches. What it is NOT used for:
-his voice, his catchphrases, his name, his trades. Theo stays Theo.
+his voice, his catchphrases, his name, his trades. Haddan stays Haddan.
 """
 from __future__ import annotations
 
@@ -200,7 +200,7 @@ def analyze() -> dict:
         "summary": {k: med(k) for k in ("talk_share", "wpm_while_talking", "questions_per_10min", "median_s_between_questions", "greetings_per_10min",
                                        "chat_addresses_per_10min", "hype_lines_per_10min", "laughs_per_10min", "silences_over_8s_per_hour", "median_sentence_words")},
     }
-    # technique vocabulary: frequent short moves (counted as categories; Theo paraphrases, never copies)
+    # technique vocabulary: frequent short moves (counted as categories; Haddan paraphrases, never copies)
     moves = Counter()
     for t in all_text:
         tl = t.lower()
@@ -219,21 +219,21 @@ def analyze() -> dict:
     report = ["# Host technique profile (reference only)", "", f"Streams analysed: {len(per_stream)}", "",
               "| metric | median |", "|---|---|"] + [f"| {k} | {v} |" for k, v in s.items()] + ["", "## Technique counts (all streams)", ""] + \
              [f"- {k}: {v}" for k, v in profile["technique_counts"].items()] + ["",
-              "## What Theo takes from this", "",
+              "## What Haddan takes from this", "",
               "- Cadence: the host talks most of the time, asks the chat something every few minutes, and greets people by name constantly.",
               "- Energy: short reactions on real events, laughter at himself, never dead air for long.",
               "- Continuity: callbacks to earlier moments and to viewers; orientation for newcomers.",
-              "- Theo paraphrases the technique in a trading-education context; no catchphrases, voice or identity are copied."]
+              "- Haddan paraphrases the technique in a trading-education context; no catchphrases, voice or identity are copied."]
     (OUT / "style_report.md").write_text("\n".join(report), encoding="utf-8")
     log.info("profile written: %s", json.dumps(s))
     return profile
 
 
 # ------------------------------------------------------------------ demos (original, via Claude)
-DEMO_SYSTEM = """You write ORIGINAL training demonstrations for "Theo", an AI trading teacher who streams live on TikTok.
+DEMO_SYSTEM = """You write ORIGINAL training demonstrations for "Haddan", an AI trading teacher who streams live on TikTok.
 You are shown a short excerpt from a different live host's stream, purely as a reference for a TECHNIQUE
 (how he greets, asks the chat, reacts, calls back, keeps energy up). Write a new demonstration of the same
-technique in Theo's own words, in a trading-education context (charts, levels, risk, no signals/predictions).
+technique in Haddan's own words, in a trading-education context (charts, levels, risk, no signals/predictions).
 Never copy phrases, names, catchphrases or trades from the excerpt. No emojis. Return JSON only."""
 
 DEMO_SCHEMA = {
@@ -291,9 +291,9 @@ async def demos(n: int) -> None:
     with dest.open("a", encoding="utf-8") as o:
         for k, ex in enumerate(todo, have + 1):
             user = (f"EXCERPT (reference for the technique only, {ex['stream']} at {int(ex['start'])}s):\n\"\"\"{ex['text']}\"\"\"\n\n"
-                    "Identify the single strongest engagement technique in it and write ONE original demonstration of that technique for Theo "
+                    "Identify the single strongest engagement technique in it and write ONE original demonstration of that technique for Haddan "
                     "in the JSON schema. The situation must be a trading-education live stream (gold or Bitcoin chart), with fictional viewer names, "
-                    "and the speech must be something Theo would say in his own voice.")
+                    "and the speech must be something Haddan would say in his own voice.")
             try:
                 obj, usage = await asyncio.to_thread(structured_json, DEMO_SCHEMA, DEMO_SYSTEM, user, CHAT_MODEL, 1500)
             except Exception as exc:  # noqa: BLE001

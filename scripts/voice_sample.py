@@ -1,4 +1,4 @@
-"""Render Theo's mood map to WAV files so you can hear what each delivery label does.
+"""Render Haddan's mood map to WAV files so you can hear what each delivery label does.
 
     python scripts/voice_sample.py            # writes data_cache/voice_samples/<mood>.wav
 

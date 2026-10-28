@@ -13,7 +13,7 @@ and strict compliance rules (no signals, no predictions, no income claims, alway
 3. The **launcher** opens. Go through its **Setup** tab once:
    - **Claude access**: paste an Anthropic API key (recommended; works on any PC), or sign in with your own
      Claude account on your own machine.
-   - **TikTok**: your handle, so Theo can read your LIVE chat.
+   - **TikTok**: your handle, so Haddan can read your LIVE chat.
    - **Voice and audio**: the online voice works everywhere; on an NVIDIA GPU press *Install local AI voice*
      for the expressive Chatterbox voice (about 3 GB). Pick **CABLE Input** as the audio device and press
      *Install VB-Cable* if it is missing (that is the virtual microphone LIVE Studio listens to).
@@ -55,7 +55,7 @@ start_stream.bat                                                 # or: the 24/7 
 
 - `RUNBOOK.md`: how everything works, operator guide, what to do when something breaks.
 - `TIKTOK_RULES.md`: the platform rules this project is built around (music, financial content, AI disclosure).
-- `app/brain/persona.md`: Theo's character sheet (edit freely).
+- `app/brain/persona.md`: Haddan's character sheet (edit freely).
 - `app/brain/curriculum/`: the lessons.
 
 ## Claude access, honestly

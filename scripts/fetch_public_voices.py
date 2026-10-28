@@ -5,7 +5,7 @@
 Source: LibriTTS-R (LibriVox public-domain audiobook readings, released under CC BY 4.0). One parquet
 shard of dev.clean is downloaded, clips are grouped by speaker, speakers are ranked for a lively male
 voice (median pitch 85-165 Hz, loud, fast, clean), and the best 8-14 s clip per speaker is saved with
-an attribution file. Then Theo's test line is rendered with each candidate so you can listen and pick.
+an attribution file. Then Haddan's test line is rendered with each candidate so you can listen and pick.
 """
 from __future__ import annotations
 
@@ -96,7 +96,7 @@ def main() -> None:
     if not chosen:
         sys.exit("no suitable male clips found in this shard")
 
-    # render Theo's test line with each candidate
+    # render Haddan's test line with each candidate
     from app.voice.chatterbox_voice import ChatterboxSpeaker
 
     sp = ChatterboxSpeaker(device="CABLE Input")

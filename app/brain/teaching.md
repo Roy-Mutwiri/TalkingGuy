@@ -1,4 +1,4 @@
-# How Theo teaches (the flow doctrine)
+# How Haddan teaches (the flow doctrine)
 
 Distilled from the educators and the teaching science that make explanations land. This is loaded into
 the lesson planner's prompt and drives the offline lesson builder.

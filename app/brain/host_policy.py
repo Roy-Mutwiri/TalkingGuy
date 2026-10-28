@@ -17,7 +17,7 @@ from ..chat.names import strip_for_speech
 DELIVERIES = ("warm", "calm", "curious", "amused", "focused", "cheerful", "excited", "considerate", "none")
 DELIVERY_TO_MOOD = {"warm": "warm", "calm": "calm", "curious": "curious", "amused": "cheerful", "focused": "teach",
                     "cheerful": "cheerful", "excited": "excited", "considerate": "considerate", "none": None}
-QUIET_INITIATIVE_S = (12.0, 20.0)    # after this much silence Theo starts something himself (initial tuning setting)
+QUIET_INITIATIVE_S = (12.0, 20.0)    # after this much silence Haddan starts something himself (initial tuning setting)
 STALE_REPLY_S = {0: 600.0, 1: 240.0, 2: 90.0}   # a reply older than this (by priority rank) is dropped, not spoken late
 LOSS_RE = re.compile(r"\b(lost|losing|blew|blown|wiped|liquidated|rekt|drawdown)\b.*\b(account|money|savings|everything|half|trade|position|\$?\d)|\b(blew|wiped) (my|the) account\b|\baccount (is )?(gone|blown)\b", re.I)
 OBSERVATION_RE = re.compile(r"\b(the )?(second|first|third|last) (attempt|touch|test|candle|wick|push)\b|\b(it|that|price) (closed|rejected|held|broke|bounced|failed)\b|\b(that|the) (wick|close|volume|spike|gap|level|zone) (is|was|looks|shows)\b|\bi (see|noticed|spotted)\b", re.I)
@@ -194,7 +194,7 @@ def reply_for(c: Comment, state: HostState, rng: random.Random | None = None) ->
     if BEGINNER_RE.search(text):
         return HostDecision("respond", c.id, f"{lead}you're in the right place. The whole idea is simple: find the level, then ask what would prove the idea wrong. I'll keep the next example plain.", "warm", "Give one plain-language example for the beginner who just asked.", "beginner")
     if AI_RE.search(text):
-        return HostDecision("respond", c.id, f"{lead}yes, I'm an A I, fully. Theo is a character, the charts are real, and nothing here is advice. Ask me anything about the chart.", "calm", None, "ai disclosure")
+        return HostDecision("respond", c.id, f"{lead}fair question, and I'll always answer it straight: Haddan is a character and this voice is generated. The charts are real, nothing here is advice. Ask me anything about the chart.", "calm", None, "ai disclosure")
     if PREDICT_RE.search(text):
         return HostDecision("respond", c.id, f"{lead}I don't predict and I don't signal, that's the deal here. What I can tell you is where the idea would be wrong: find the level behind the move, and if price trades through it, the story is over.", "calm", None, "deflect prediction")
     if PRICE_ASK_RE.search(text) and no_quote:
@@ -218,7 +218,7 @@ def reply_for(c: Comment, state: HostState, rng: random.Random | None = None) ->
 
 
 def initiative(state: HostState, rng: random.Random | None = None) -> HostDecision:
-    """Quiet chat: Theo starts something himself. Observation (grounded in supplied facts), mini challenge, or continuation."""
+    """Quiet chat: Haddan starts something himself. Observation (grounded in supplied facts), mini challenge, or continuation."""
     rng = rng or random
     topic = (state.topic or "the chart").strip()
     live = [f for f in state.facts if not NO_NEWS_RE.search(f) and any(ch.isdigit() for ch in f)]

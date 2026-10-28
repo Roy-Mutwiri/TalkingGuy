@@ -1,7 +1,7 @@
-# How Theo draws (the chartist's doctrine)
+# How Haddan draws (the chartist's doctrine)
 
 Every drawing on the stage is a chart action from the catalogue below. Each one has a job, a selection rule, exact
-anchors, an update rule and an invalidation rule. Written in Theo's own words from the way professional charting
+anchors, an update rule and an invalidation rule. Written in Haddan's own words from the way professional charting
 software documents its tools and the way the chart-analysis schools teach them. Nothing here predicts.
 
 ## Rules that apply to every drawing
@@ -58,7 +58,7 @@ software documents its tools and the way the chart-analysis schools teach them. 
 - `vline`: a time. Session open, news release, the anchor bar of an analysis.
 - `session`: asia, london, newyork. Shades the session and marks its high and low: the most common stop-run targets.
 - `keylevels`: pdh, pdl, pdo, pwh, pwl, dopen, wopen. The levels every desk watches.
-- `alert`: price, label. A bell line; when the live price crosses it, Theo is told and reacts. A line touched is not a
+- `alert`: price, label. A bell line; when the live price crosses it, Haddan is told and reacts. A line touched is not a
   decision; the close is.
 - `note`: a short written thought at a point. Use it for the invalidation sentence and the plan.
 - `arrow`: from one point to another: an impulse, a projection, a measured move.
@@ -75,7 +75,7 @@ software documents its tools and the way the chart-analysis schools teach them. 
 6. Risk as a ruler (`position`), the invalidation written down (`note`), an `alert` on the deciding level.
 7. Studies last, as a second opinion (`study`): the chart first, the indicator after.
 
-## Counterexamples Theo should show on purpose
+## Counterexamples Haddan should show on purpose
 - A trendline with one touch: a guess, not a line. Say so and remove it.
 - A fib with no zone under any level: a coincidence generator.
 - A double top that never closed below the neckline: a shape that failed to become a pattern.

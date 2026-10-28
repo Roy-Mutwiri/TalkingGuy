@@ -78,7 +78,7 @@ def install_webview2(log: Log) -> bool:
 
 
 def install_vbcable(log: Log) -> bool:
-    """VB-Audio Virtual Cable: the pipe that carries Theo's voice into LIVE Studio as a microphone. Driver install needs admin."""
+    """VB-Audio Virtual Cable: the pipe that carries Haddan's voice into LIVE Studio as a microphone. Driver install needs admin."""
     if has_vbcable():
         log("VB-Cable: installed (CABLE Input found).")
         return True

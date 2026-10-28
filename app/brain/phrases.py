@@ -14,12 +14,13 @@ STATE = Path("data_cache/phrase_history.json")
 
 BANKS: dict[str, list[str]] = {
     "greeting": [
-        "Hey, welcome in. This is the Chart Room, I'm Theo, and yes, I'm an A I. Think of me as the friend who sits next to you and explains the chart while it moves.",
-        "Good to see you. Chart Room is live, I'm Theo. I'm an A I teacher, this is education only, and the chat is open, so ask me anything.",
-        "Welcome, grab a seat. I'm Theo, the A I behind the Chart Room. No signals here, no hype, just charts explained properly.",
-        "If you just walked in, hi. I'm Theo. I read the chat between lessons, so throw your questions at me.",
-        "Chart Room, live again. I'm Theo, an A I, and my only job is to make charts make sense. Let's get into it.",
-        "Hello hello. Theo here. We're live around the clock, so wherever you are, it's chart time.",
+        "Hey, welcome in. This is the Chart Room, I'm Haddan. Think of me as the friend who sits next to you and explains the chart while it moves.",
+        "Good to see you. Chart Room is live, I'm Haddan. This is education only, and the chat is open, so ask me anything.",
+        "Welcome, grab a seat. Haddan here, this is the Chart Room. No signals, no hype, just charts explained properly.",
+        "If you just walked in, hi. I'm Haddan. I read the chat between lessons, so throw your questions at me.",
+        "Chart Room, live again. Haddan on the mic, and my only job is to make charts make sense. Let's get into it.",
+        "Hello hello. Haddan here. We're live around the clock, so wherever you are, it's chart time.",
+        "Welcome in. Some of you call me Sir Haddan, I'll take it. Chart's up, chat's open, let's read it together.",
     ],
     "bridge": [
         "Let me check the chat before we move on.",
@@ -36,7 +37,7 @@ BANKS: dict[str, list[str]] = {
         "Pause. Chat time.",
     ],
     "disclaimer": [
-        "Quick reminder, I'm an A I teacher, this is education, not financial advice.",
+        "Quick reminder, this is education, not financial advice. I teach, you decide.",
         "Nothing here is a signal. I show you how to read a chart, you decide what to do with your own risk.",
         "I never know where price goes next. Nobody does. We work with levels and invalidation, not predictions.",
         "Friendly reminder: I teach, I don't tip. Your money, your decisions.",
@@ -154,8 +155,9 @@ BANKS: dict[str, list[str]] = {
         "Okay, countdown. Ten seconds until the live chart. Get your calls in.",
     ],
     "ai_honest": [
-        "I'm an A I, by the way. I don't say that to be cute, I say it because you should know who's talking.",
-        "Reminder that I'm an A I teacher. I don't have a brokerage account and I'm not selling you anything.",
+        "Straight talk for a second: I don't run a signal group, I don't take DMs, and I'm not selling a course. The chart is the whole product.",
+        "Honesty corner. I don't know where price goes next, and neither does anyone selling you certainty. We work with levels and where the idea is wrong.",
+        "One thing about this room: nobody here is going to tell you what to buy. I show you how to read it, you own the decision.",
     ],
     "hint": [
         "{hint}",

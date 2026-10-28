@@ -1,4 +1,4 @@
-"""Audit Theo's language for AI-writing tells (Wikipedia: Signs of AI writing).
+"""Audit Haddan's language for AI-writing tells (Wikipedia: Signs of AI writing).
 
     python scripts/ai_tells_audit.py            # banks + the last 2000 spoken lines in logs/stream.log
 

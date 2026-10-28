@@ -104,11 +104,11 @@ class ChatResponder:
         self.last_openers.append(" ".join(text.split()[:4]))
         self.last_openers = self.last_openers[-10:]
         if self.memory is not None:
-            self.memory.remember(f"Viewer {user} (@{handle}) asked: {question.strip()[:200]} | Theo answered: {text[:300]}", kind="qa", viewer=handle)
+            self.memory.remember(f"Viewer {user} (@{handle}) asked: {question.strip()[:200]} | Haddan answered: {text[:300]}", kind="qa", viewer=handle)
         return reply
 
     async def deliver(self, promise: str, lesson_title: str, recent_beats: list[str], symbol: str | None) -> str:
-        """Pay off something Theo promised earlier (callbacks are what make a stream feel continuous)."""
+        """Pay off something Haddan promised earlier (callbacks are what make a stream feel continuous)."""
         context = "\n".join(f"- {b}" for b in recent_beats[-6:]) or "- (nothing yet)"
         prompt = (
             f"CURRENT LESSON: {lesson_title}\nON SCREEN: {symbol or 'no chart loaded'}\nWHAT YOU SAID RECENTLY:\n{context}\n\n"

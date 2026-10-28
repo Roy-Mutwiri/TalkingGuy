@@ -3,7 +3,7 @@
 Everything here is grounded in real events (real price moves, real joins, real likes, real
 viewer counts) and stays inside the compliance lines (excitement about the chart and the
 room, never about money). The director calls these between beats; the stage gets a visual
-flash immediately so the energy is on screen even while Theo is mid-sentence.
+flash immediately so the energy is on screen even while Haddan is mid-sentence.
 """
 from __future__ import annotations
 

@@ -165,7 +165,7 @@ class App:
             e.grid(row=i, column=1, sticky="w", pady=2)
             self.setting_entries[key] = e
         ttk.Button(f, text="Save settings", command=self._save_settings).pack(anchor="w", pady=6)
-        ttk.Button(f, text="Edit persona (Theo's character sheet)", command=lambda: process.open_folder(ROOT / "app" / "brain" / "persona.md")).pack(anchor="w")
+        ttk.Button(f, text="Edit persona (Haddan's character sheet)", command=lambda: process.open_folder(ROOT / "app" / "brain" / "persona.md")).pack(anchor="w")
 
     def _build_logs(self) -> None:
         f = self.tab_logs

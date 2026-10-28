@@ -1,4 +1,4 @@
-"""Teaching flow for Theo: the lesson arc, signposts, and a library of plain-words definitions,
+"""Teaching flow for Haddan: the lesson arc, signposts, and a library of plain-words definitions,
 analogies, chart stories, mistakes and check questions for the concepts in the curriculum.
 
 See teaching.md for where this comes from (Rosenshine, Feynman, Mind Math Money, Al Brooks, Adam Khoo,

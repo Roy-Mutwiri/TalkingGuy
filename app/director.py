@@ -94,7 +94,7 @@ class Director:
         self.lessons_played = 0
         self.questions_answered = 0
         self._last_module: str | None = None
-        self.promises: list[dict] = []                 # things Theo said he would show/explain (delivered by deliver_promises)
+        self.promises: list[dict] = []                 # things Haddan said he would show/explain (delivered by deliver_promises)
         self.answered_texts: list[tuple[float, str]] = []   # (ts, question) for duplicate suppression
         self.pending_question: dict | None = None
         self.last_speech_end = time.time()
@@ -289,7 +289,7 @@ class Director:
             self._save_setting("voice", voice)
             await self.status(f"voice set to {engine}:{voice}")
             if preview:
-                await self.say(f"New voice check. This is how I sound now. Still Theo, still an A I, still no signals.")
+                await self.say(f"New voice check. This is how I sound now. Still Haddan, still no signals.")
         except Exception as exc:  # noqa: BLE001
             await self.status(f"voice change failed: {exc}")
 
@@ -554,7 +554,7 @@ class Director:
                 text = dec.speech
                 mood = DELIVERY_TO_MOOD.get(dec.delivery)
                 if text and self.memory is not None:
-                    self.memory.remember(f"Viewer {q.user} asked: {q.text[:200]} | Theo answered: {text[:200]}", kind="qa", viewer=q.user)
+                    self.memory.remember(f"Viewer {q.user} asked: {q.text[:200]} | Haddan answered: {text[:200]}", kind="qa", viewer=q.user)
             if not text:
                 await self.status(f"chose silence for @{q.user}: {q.text[:60]}")
                 await self.send({"type": "question", "clear": True})
@@ -606,7 +606,7 @@ class Director:
         if any(w in q for w in ("going to", "will it", "pump", "dump", "100k", "target", "should i buy", "should i sell", "signal")):
             return f"{name}. I don't predict and I don't signal, that's the deal here. What I can tell you is where the idea would be wrong: find the level behind the move, and if price trades through it, the story is over."
         if any(w in q for w in ("real", "human", "bot", "ai")):
-            return f"{name}. I'm an A I, fully. Theo is a character, the charts are real, and nothing here is advice. Ask me anything about the chart though."
+            return f"{name}. Fair question, and I'll always answer it straight: Haddan is a character and this voice is generated. The charts are real, nothing here is advice. Ask me anything about the chart though."
         return random.choice([
             f"{name}. Short answer: look at where it happens on the chart first, then ask what would prove the idea wrong. That's the whole method.",
             f"{name}. Good question. The location matters more than the pattern. A setup at a level is a setup; the same shape in the middle of nowhere is noise.",
@@ -680,7 +680,7 @@ class Director:
             return "the live chart, and I'll mark where the idea would be wrong"
 
     async def hot_moments(self) -> None:
-        """React out loud to a real move that happened while Theo was busy (fresh ones only)."""
+        """React out loud to a real move that happened while Haddan was busy (fresh ones only)."""
         now = time.time()
         alert = getattr(self, "hot_alert", None)
         if alert and now - alert["at"] < HOT_EVENT_TTL_S:
@@ -705,7 +705,7 @@ class Director:
             self.memory.remember(f"Live move: {h.symbol} {h.pct:+.2f}% in a minute to {price} during {self.current_title or 'live chart'}", kind="event")
 
     async def quiet_initiative(self) -> None:
-        """Chat is quiet and nothing is queued: Theo starts something. Rotates observation, mini challenge,
+        """Chat is quiet and nothing is queued: Haddan starts something. Rotates observation, mini challenge,
         continuation, and the occasional disclaimer; the observation is grounded in the live quote only."""
         if time.time() - self.last_speech_end < QUIET_INITIATIVE_S[0]:
             await asyncio.sleep(max(0.0, QUIET_INITIATIVE_S[0] - (time.time() - self.last_speech_end)))
@@ -728,7 +728,7 @@ class Director:
             await self.say(self.picker.pick("disclaimer"), mood="serious")
 
     async def deliver_promises(self, max_n: int = 1) -> None:
-        """Finish what Theo promised (continuity); stale promises are dropped quietly, never claimed."""
+        """Finish what Haddan promised (continuity); stale promises are dropped quietly, never claimed."""
         now = time.time()
         self.promises = [p for p in self.promises if now - p["made_at"] < 30 * 60 and not p.get("done")]
         if not self.promises or self.responder is None or not brain_available():
@@ -740,7 +740,7 @@ class Director:
                 await self.status(f"delivering promise: {p['text'][:80]}")
                 await self.say(text, mood="teach")
                 if self.memory is not None:
-                    self.memory.remember(f"Theo delivered a promise to {p.get('user', 'chat')}: {p['text'][:160]} -> {text[:200]}", kind="promise")
+                    self.memory.remember(f"Haddan delivered a promise to {p.get('user', 'chat')}: {p['text'][:160]} -> {text[:200]}", kind="promise")
         self.promises = [p for p in self.promises if not p.get("done")]
 
     async def play_lesson(self, script: LessonScript) -> None:
@@ -943,7 +943,7 @@ class Director:
                 narrated += 1
                 await self.say(say)
                 if self.memory is not None and narrated <= 3:
-                    self.memory.remember(f"On {self.current_symbol or 'the chart'} Theo said: {say[:220]}", kind="said", meta={"symbol": self.current_symbol or ""})
+                    self.memory.remember(f"On {self.current_symbol or 'the chart'} Haddan said: {say[:220]}", kind="said", meta={"symbol": self.current_symbol or ""})
             else:
                 await asyncio.sleep(pace)
 

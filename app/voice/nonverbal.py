@@ -1,4 +1,4 @@
-"""Non-verbal layer: decides when Theo laughs, chuckles, sighs, gasps, groans, clears his throat or sniffs.
+"""Non-verbal layer: decides when Haddan laughs, chuckles, sighs, gasps, groans, clears his throat or sniffs.
 
 The brain may write tags itself (see tags.py); this layer adds them where a person would make the sound
 and the brain did not, with discipline: at most one per utterance, a minimum gap between sounds, never on
