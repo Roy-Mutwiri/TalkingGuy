@@ -22,10 +22,12 @@ _MARKERS = ("supervise.ps1", "app.run", "app.stage_window")
 
 
 def _ours(cmdline: list[str] | None) -> bool:
+    """Only processes started from THIS app folder (the venv python or supervise.ps1 path contains ROOT).
+    Two installs on one PC (or a dev checkout next to the installed app) must never stop each other."""
     if not cmdline:
         return False
-    text = " ".join(cmdline)
-    return str(ROOT).lower() in text.lower() or any(m in text for m in ("-m app.run", "app.stage_window", "supervise.ps1"))
+    text = " ".join(cmdline).lower().replace("/", "\\")
+    return str(ROOT).lower().replace("/", "\\") in text
 
 
 def stream_processes() -> list:
