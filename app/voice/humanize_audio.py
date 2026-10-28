@@ -232,6 +232,10 @@ def humanize_sentence(audio: np.ndarray, rate: int, *, first: bool, long_prev: b
     if audio.size == 0:
         return audio
     rng = np.random.default_rng(seed) if seed is not None else _rng
+    if plan is not None and getattr(plan, "contour", "flat") not in ("flat", ""):
+        from .intonation import apply as intonate
+
+        audio = intonate(audio, rate, plan.contour, plan.strength)     # pitch and loudness pattern, timbre untouched
     voice = mic_chain(audio, rate)
     if plan is not None:
         from .human import render

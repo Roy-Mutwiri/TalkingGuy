@@ -135,17 +135,13 @@ def plan_sentence(sentence: str, *, mood: str = "teach", index: int = 0, total: 
         p.inhale = rng.random() < 0.3; p.notes.append("long")
     if words <= 3 and index == 0:
         p.post_gap += 0.15                      # "Okay." then a beat
-    # intonation: what kind of sentence is this, melodically
-    if s.endswith("?"):
-        p.contour = "question"
-    elif POINT_RE.search(s) or (EXCITE_RE.search(s) and words <= 10):
-        p.contour = "emphasis"
-    elif index < total - 1 and (s.endswith(",") or words <= 5 or re.search(r"\b(and|but|so|because|which)\s*[.!]?$", s, re.I)):
-        p.contour = "continue"
-    else:
-        p.contour = "statement"
+    # intonation: the English rising/falling rulebook (voice/intonation.py) decides the pattern for this sentence
+    from .intonation import classify
+
+    p.contour = classify(s, index, total)
     p.key_st = 0.0                                  # the pitch is the host's own, always
-    p.strength = 0.9 + float(rng.random()) * 0.5
+    p.strength = 0.85 + float(rng.random()) * 0.45
+    p.notes.append(p.contour)
     # mouth noises: rare, never on an aside or a murmur
     if not p.aside and rng.random() < 0.07:
         p.smack = True
@@ -337,8 +333,6 @@ def render(voice: np.ndarray, rate: int, plan: Plan, rng: np.random.Generator, *
     y = voice
     if plan.speed != 1.0:
         y = time_stretch(y, rate, plan.speed)
-    if plan.contour != "flat":
-        y = shape_intonation(y, rate, plan.contour, plan.strength, plan.key_st)
     y = tone_of_day(y, rate, plan.warmth_db, plan.presence_db)
     y = proximity(y, rate, plan.proximity)
     y = roughen(y, plan.roughness)
@@ -384,7 +378,6 @@ def describe(plan: Plan) -> str:
         bits.append(f"{plan.level_db:+.1f} dB")
     if abs(plan.proximity) >= 0.3:
         bits.append("lean " + ("in" if plan.proximity > 0 else "back"))
-    bits.append(plan.contour)
     bits += [n for n in plan.notes if n not in ("day",)]
     if plan.smack:
         bits.append("smack")

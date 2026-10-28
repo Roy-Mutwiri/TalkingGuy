@@ -21,5 +21,6 @@ edge-tts==7.3.1
 pywebview==6.2.1
 pythonnet==3.2.1
 psutil==7.2.2
+pyworld==0.3.5
 pytest==9.1.1
 pytest-asyncio==1.4.1
