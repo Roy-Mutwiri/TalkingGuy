@@ -34,6 +34,9 @@ TAGS = {
     "considerate": ["okay?"],
 }
 THINKING = ["Let me look.", "Give me a second.", "Hmm.", "Let me check that."]
+_COMMON_STARTERS = {"the", "this", "that", "these", "those", "price", "gold", "bitcoin", "if", "when", "so", "look", "you", "we", "it",
+                    "here", "there", "now", "and", "but", "okay", "a", "an", "one", "every", "most", "some", "what", "which", "why", "how",
+                    "once", "then", "before", "after", "notice", "watch", "see", "think", "remember", "say", "let", "i", "my", "our", "your"}
 RESTARTS = ["wait, let me say that again.", "no, let me start that again.", "hang on, say it properly.", "actually, let me rephrase."]
 _NUMBERISH = re.compile(r"\d")
 _SERIOUS = re.compile(r"\b(not financial advice|education|disclaimer|risk warning|invalidat)", re.I)
@@ -95,7 +98,11 @@ def humanize_text(text: str, mood: str = "teach", seed: int | None = None) -> st
         p_open = 0.28 if i == 0 else 0.07
         if rnd.random() < p_open and not re.match(r"^(okay|so|right|look|now|alright|see|hey|oh|wait|hmm|yo)\b", s2, re.I):
             op = rnd.choice(OPENERS.get(mood, OPENERS["teach"]))
-            s2 = f"{op} {s2[0].lower() + s2[1:] if len(s2) > 1 and not s2[:2].isupper() else s2}"
+            first = s2.split()[0].rstrip(",.") if s2.split() else ""
+            # only lower-case a plain sentence starter; a name ("Maria, good one") keeps its capital
+            if first.lower() in _COMMON_STARTERS and len(s2) > 1:
+                s2 = s2[0].lower() + s2[1:]
+            s2 = f"{op} {s2}"
         # thinking pause before a sentence that starts with a number or a level (sounds like reading the chart)
         if i > 0 and rnd.random() < 0.08 and re.match(r"^(The|That|This|Price|Gold|Bitcoin)\b", s2):
             s2 = rnd.choice(THINKING) + " " + s2
