@@ -67,6 +67,6 @@ your own use on your own machines, not as the login of a product you distribute,
 
 ## License and content
 
-Music in `music/` is generated locally (original); nothing is streamed from the internet (see `TIKTOK_RULES.md`).
+Music in `music/` is generated locally (original) and keeps being generated in the background while the stream runs (MusicGen on the CPU); nothing is streamed from the internet (see `TIKTOK_RULES.md`).
 The voice reference clips in `app/voice/ref/` are public-domain LibriVox readings (CC BY 4.0, see
 `ATTRIBUTION.json`). Chart rendering uses TradingView's open-source lightweight-charts (Apache-2.0).

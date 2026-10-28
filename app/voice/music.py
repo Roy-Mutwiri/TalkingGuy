@@ -6,6 +6,8 @@ Put files you have the rights to in the `music/` folder (mp3/wav/flac/ogg/m4a):
 Never commercial songs: TikTok mutes/ends LIVEs that play copyrighted music, remixed or not.
 
 The bed loops shuffled tracks at a low level and ducks under the voice. Only the folder, nothing from the internet.
+The folder is rescanned as it plays: beats the live maker (music_maker.py) adds join the rotation, retired ones drop out,
+and nothing repeats until every track has had its turn.
 """
 from __future__ import annotations
 
@@ -59,16 +61,40 @@ class MusicBed:
         self.stream.start()
         log.info("music bed on: %d tracks", len(self.tracks))
 
+    def _scan(self) -> list[Path]:
+        try:
+            return sorted(p for p in self.folder.glob("*") if p.suffix.lower() in EXTS and ".part" not in p.name)
+        except OSError:
+            return self.tracks
+
     def _loader(self) -> None:
         order = self.tracks[:]
         random.shuffle(order)
-        i = 0
+        played: set[Path] = set()
+        last_scan = 0.0
         while not self._stop.is_set():
             with self._lock:
                 need = self.current is None or self.pos >= self.current.size - self.rate
+            if time.time() - last_scan > 30:
+                last_scan = time.time()
+                fresh = self._scan()
+                new = [p for p in fresh if p not in order and p not in played]
+                if new:
+                    random.shuffle(new)
+                    order.extend(new)                     # new beats join the current pass
+                    self.tracks = fresh
+                    log.info("music: %d new track(s) joined the rotation (%d total)", len(new), len(fresh))
+                order = [p for p in order if p.exists()]   # retired beats leave
             if need:
-                path = order[i % len(order)]
-                i += 1
+                if not order:                              # everyone has played: shuffle a new pass from the folder
+                    order = [p for p in self._scan()]
+                    random.shuffle(order)
+                    played.clear()
+                    if not order:
+                        time.sleep(2)
+                        continue
+                path = order.pop(0)
+                played.add(path)
                 try:
                     audio = _decode(path, self.rate)
                     with self._lock:

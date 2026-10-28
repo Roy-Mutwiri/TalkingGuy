@@ -27,6 +27,16 @@ while ($true) {
         Start-Process -FilePath $py -ArgumentList $stageArgs -WorkingDirectory $root | Out-Null
         Start-Sleep -Seconds 5
     }
+    # the live music maker (CPU, below-normal priority) keeps music/ topped up with original beats; MUSIC_MAKER=0 in .env turns it off
+    $makerOff = (Test-Path (Join-Path $root ".env")) -and ((Get-Content (Join-Path $root ".env")) -match '^\s*MUSIC_MAKER\s*=\s*0')
+    if (-not $makerOff) {
+        $mk = Get-CimInstance Win32_Process -Filter "Name = 'python.exe'" | Where-Object { $_.CommandLine -like '*app.voice.music_maker*' }
+        if (-not $mk) {
+            Log "music maker missing; starting"
+            $mp = Start-Process -FilePath $py -ArgumentList @('-m', 'app.voice.music_maker') -WorkingDirectory $root -WindowStyle Hidden -PassThru
+            try { $mp.PriorityClass = 'BelowNormal' } catch {}
+        }
+    }
     # health check: hub must answer and have a stage connected; if not for a while, restart the teacher
     try {
         $h = (Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 http://127.0.0.1:8000/health).Content | ConvertFrom-Json

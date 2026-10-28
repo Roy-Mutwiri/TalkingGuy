@@ -18,7 +18,7 @@ try:
 except Exception:  # noqa: BLE001
     psutil = None  # type: ignore[assignment]
 
-_MARKERS = ("supervise.ps1", "app.run", "app.stage_window")
+_MARKERS = ("supervise.ps1", "app.run", "app.stage_window", "app.voice.music_maker")
 
 
 def _ours(cmdline: list[str] | None) -> bool:
