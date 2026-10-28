@@ -81,7 +81,7 @@ def _shape(pattern: str, u: np.ndarray, strength: float) -> tuple[np.ndarray, np
         st = np.where(u < 0.18, 0.9 * (1 - u / 0.18), 0.0) + np.where(u > 0.62, -2.4 * (u - 0.62) / 0.38, 0.0)
         db = np.where(u < 0.25, 0.8, 0.0) + np.where(u > 0.7, -1.8 * (u - 0.7) / 0.3, 0.0)
     elif pattern == "rise":
-        st = np.where(u > 0.6, 2.9 * ((u - 0.6) / 0.4) ** 1.3, 0.0) + np.where(u < 0.15, 0.3, 0.0)
+        st = 2.9 * np.clip((u - 0.6) / 0.4, 0, 1) ** 1.3 + np.where(u < 0.15, 0.3, 0.0)
         db = np.where(u > 0.7, 0.9 * (u - 0.7) / 0.3, 0.0)
     elif pattern == "fall_rise":
         st = np.where(u < 0.72, -1.7 * np.clip((u - 0.3) / 0.42, 0, 1), -1.7 + 3.2 * (u - 0.72) / 0.28)
