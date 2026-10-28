@@ -9,8 +9,9 @@ import { TrendLine } from "lwc-plugins/trend-line.js";
 import { Rectangle, RectangleDrawingTool } from "lwc-plugins/rectangle-drawing-tool.js";
 import { VolumeProfile } from "lwc-plugins/volume-profile.js";
 
-const TV = { bg: "#ffffff", grid: "#f0f3fa", border: "#e0e3eb", panel: "#f0f3fa", text: "#131722", muted: "#787b86", blue: "#2962ff", up: "#089981", down: "#f23645",
-  chip: "rgba(255,255,255,.92)", label: "#131722" };
+// TradingView's dark palette (the one every chart on TikTok looks like): #131722 canvas, #1e222d grid, #2a2e39 lines, #d1d4dc text
+const TV = { bg: "#131722", grid: "#1e222d", border: "#2a2e39", panel: "#2a2e39", text: "#d1d4dc", muted: "#787b86", blue: "#2962ff", up: "#089981", down: "#f23645",
+  chip: "rgba(19,23,34,.92)", label: "#d1d4dc" };
 const FONT = '-apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif';
 const DRAW_MS = 420;
 const TF_S = { "1m": 60, "5m": 300, "15m": 900, "1h": 3600, "4h": 14400, "1d": 86400, "1w": 604800 };
@@ -49,10 +50,11 @@ export class ChartEngine {
       layout: { background: { type: "solid", color: TV.bg }, textColor: TV.text, fontSize: 18, fontFamily: FONT, attributionLogo: true,
                 panes: { separatorColor: TV.border, separatorHoverColor: "rgba(41,98,255,0.2)", enableResize: true } },
       grid: { vertLines: { color: TV.grid }, horzLines: { color: TV.grid } },
-      rightPriceScale: { borderColor: TV.border, scaleMargins: { top: 0.1, bottom: 0.22 }, textColor: TV.text },
-      timeScale: { borderColor: TV.border, timeVisible: true, secondsVisible: false, rightOffset: 10, barSpacing: 10, minBarSpacing: 0.5 },
-      crosshair: { mode: CrosshairMode.Normal, vertLine: { color: TV.muted, width: 1, style: LineStyle.Dashed, labelBackgroundColor: "#131722" },
-                   horzLine: { color: TV.muted, width: 1, style: LineStyle.Dashed, labelBackgroundColor: "#131722" } },
+      // candles fill the pane like TradingView: small margins, volume in the bottom fifth, no overlay allowed to stretch the scale
+      rightPriceScale: { borderColor: TV.border, scaleMargins: { top: 0.06, bottom: 0.2 }, textColor: TV.text, entireTextOnly: true },
+      timeScale: { borderColor: TV.border, timeVisible: true, secondsVisible: false, rightOffset: 8, barSpacing: 13, minBarSpacing: 0.5 },
+      crosshair: { mode: CrosshairMode.Normal, vertLine: { color: "#9598a1", width: 1, style: LineStyle.Dashed, labelBackgroundColor: "#4c525e" },
+                   horzLine: { color: "#9598a1", width: 1, style: LineStyle.Dashed, labelBackgroundColor: "#4c525e" } },
       // full TradingView interaction: wheel zoom, drag to pan, drag an axis to stretch it, double-click an axis to reset
       handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
       handleScale: { axisPressedMouseMove: { time: true, price: true }, mouseWheel: true, pinch: true, axisDoubleClickReset: { time: true, price: true } },
@@ -84,12 +86,14 @@ export class ChartEngine {
         this.onNeedHistory(this.candles[0].time);
       }
     });
+    // the candle itself is TradingView's own renderer (lightweight-charts is their library): body with a 1 px border in the
+    // same colour, 1 px wick, 1 px gap between bars, exactly as on tradingview.com in the default dark theme
     this.series = this.chart.addSeries(CandlestickSeries, {
-      upColor: TV.up, downColor: TV.down, borderUpColor: TV.up, borderDownColor: TV.down, wickUpColor: TV.up, wickDownColor: TV.down,
-      priceLineColor: TV.blue, priceLineStyle: LineStyle.Dashed, lastValueVisible: true,
+      upColor: TV.up, downColor: TV.down, borderVisible: true, borderUpColor: TV.up, borderDownColor: TV.down, wickVisible: true, wickUpColor: TV.up, wickDownColor: TV.down,
+      priceLineColor: TV.blue, priceLineStyle: LineStyle.Dashed, priceLineWidth: 1, lastValueVisible: true,
     });
     this.volume = this.chart.addSeries(HistogramSeries, { priceFormat: { type: "volume" }, priceScaleId: "vol", color: "#26a69a", lastValueVisible: false, priceLineVisible: false });
-    this.chart.priceScale("vol").applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
+    this.chart.priceScale("vol").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
     this.markers = createSeriesMarkers(this.series, []);
     this.markerList = [];
     this.priceLines = [];     // {obj, id, user}
@@ -128,8 +132,8 @@ export class ChartEngine {
     this.symbol = symbol || this.symbol;
     const tfLabel = ({ "1m": "1", "5m": "5", "15m": "15", "1h": "60", "4h": "240", "1d": "D", "1w": "W" })[tf] || tf;
     this.watermark.applyOptions({ lines: [
-      { text: (symbol || "").replace("/", ""), color: "rgba(19,23,34,0.06)", fontSize: 84, fontStyle: "bold", fontFamily: FONT },
-      { text: `${tfLabel} · ${source || ""}`, color: "rgba(19,23,34,0.06)", fontSize: 30, fontFamily: FONT },
+      { text: (symbol || "").replace("/", ""), color: "rgba(255,255,255,0.05)", fontSize: 84, fontStyle: "bold", fontFamily: FONT },
+      { text: `${tfLabel} · ${source || ""}`, color: "rgba(255,255,255,0.05)", fontSize: 30, fontFamily: FONT },
     ] });
   }
 
@@ -142,7 +146,7 @@ export class ChartEngine {
   _viewRecent(total) {
     const n = total != null ? total : this.candles.length;
     if (!n) return;
-    const show = Math.min(n, (TF_S[this.tf] || 0) <= 60 ? 120 : 90);
+    const show = Math.min(n, (TF_S[this.tf] || 0) <= 60 ? 100 : 72);     // fewer bars in view = TradingView-sized candles on a 1080 px stage
     this.chart.timeScale().setVisibleLogicalRange({ from: n - show - 0.5, to: n + 7 });
   }
 
@@ -527,7 +531,7 @@ export class ChartEngine {
     const i0 = this._idx(msg.anchor); const cs = this.candles; if (i0 < 0 || cs.length - i0 < 2) return;
     const pts = []; let pv = 0, vv = 0;
     for (let i = i0; i < cs.length; i++) { const c = cs[i], v = c.volume || 1, tp = (c.high + c.low + c.close) / 3; pv += tp * v; vv += v; pts.push({ time: c.time, value: pv / vv }); }
-    const s = this.chart.addSeries(LineSeries, { color: msg.color || "#ff9800", lineWidth: 2, priceLineVisible: false, lastValueVisible: false, title: msg.label || "AVWAP", visible: !this.hidden });
+    const s = this.chart.addSeries(LineSeries, { color: msg.color || "#ff9800", lineWidth: 2, priceLineVisible: false, lastValueVisible: false, title: msg.label || "AVWAP", visible: !this.hidden, autoscaleInfoProvider: () => null });
     s.setData(pts);
     this.indicators.push({ obj: s, id: msg.id || null, user: !!msg.user, kind: "avwap", spec: msg });
     if (msg.user) this.userItems.push({ kind: "series", obj: s });
@@ -553,7 +557,7 @@ export class ChartEngine {
     const cs = this.candles; if (cs.length < 5) return false;
     const closes = cs.map((c) => c.close), col = spec.color || TV.blue, user = !!spec.user;
     // no axis tags for studies: the legend names them, and the price scale stays readable for the levels that matter
-    const line = (pts, opts, pane) => { const s = this.chart.addSeries(LineSeries, { lineWidth: 2, priceLineVisible: false, lastValueVisible: false, visible: !this.hidden, ...opts }, pane || 0); s.setData(pts.filter((p) => p.value != null)); this.indicators.push({ obj: s, id, user, kind: spec.kind, spec, pane: pane || 0 }); if (user) this.userItems.push({ kind: "series", obj: s }); return s; };
+    const line = (pts, opts, pane) => { const s = this.chart.addSeries(LineSeries, { lineWidth: 2, priceLineVisible: false, lastValueVisible: false, visible: !this.hidden, ...(pane ? {} : { autoscaleInfoProvider: () => null }), ...opts }, pane || 0); s.setData(pts.filter((p) => p.value != null)); this.indicators.push({ obj: s, id, user, kind: spec.kind, spec, pane: pane || 0 }); if (user) this.userItems.push({ kind: "series", obj: s }); return s; };
     const zip = (vals) => cs.map((c, i) => ({ time: c.time, value: vals[i] }));
     const k = spec.kind, n = spec.length || 20;
     if (k === "ema") line(zip(ema(closes, n)), { color: col, title: `EMA ${n}` });
@@ -578,7 +582,7 @@ export class ChartEngine {
   _updateStudiesLast() { /* intrabar: studies refresh on the next closed bar (what "confirmed" means) */ }
   indicator(msg) {
     this._dropId(msg.id);
-    const s = this.chart.addSeries(LineSeries, { color: msg.color || TV.blue, lineWidth: 2, priceLineVisible: false, lastValueVisible: false, title: msg.name || "", visible: !this.hidden });
+    const s = this.chart.addSeries(LineSeries, { color: msg.color || TV.blue, lineWidth: 2, priceLineVisible: false, lastValueVisible: false, title: msg.name || "", visible: !this.hidden, autoscaleInfoProvider: () => null });
     const pts = (msg.points || []).filter((p) => typeof p.value === "number").sort((a, b) => a.time - b.time).filter((p, i, a) => i === 0 || p.time > a[i - 1].time);
     s.setData(pts);
     this.indicators.push({ obj: s, id: msg.id || null, user: !!msg.user, kind: "points" });
@@ -792,7 +796,7 @@ export class ChartEngine {
         const shown = Math.ceil(lines.join(" ").length * prog);
         ctx.font = `600 ${size}px ${FONT}`; const w = Math.max(...lines.map((l) => ctx.measureText(l).width), 8), lh = size * 1.25, h = lh * lines.length;
         const x0 = nx + w + 14 > W - 70 ? nx - w - 12 : nx + 1;      // flip to the left near the price axis
-        ctx.fillStyle = d.bg || "rgba(255,255,255,.94)"; ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x0 - 5, ny - h - 4, w + 12, h + 10, 3); ctx.fill(); if (!d.bg || d.bg === "transparent") ctx.stroke();
+        ctx.fillStyle = d.bg || "rgba(19,23,34,.94)"; ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(x0 - 5, ny - h - 4, w + 12, h + 10, 3); ctx.fill(); if (!d.bg || d.bg === "transparent") ctx.stroke();
         ctx.fillStyle = col; let used = 0;
         lines.forEach((l, i) => { const part = l.slice(0, Math.max(0, shown - used)); used += l.length + 1; ctx.fillText(part, x0, ny - h - 1 + lh * (i + 1) - lh * 0.22); });
         d._box = [x0 - 5, ny - h - 4, w + 12, h + 10];

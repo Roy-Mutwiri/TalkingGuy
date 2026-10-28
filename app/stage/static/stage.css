@@ -28,7 +28,7 @@
   --r1: 6px; --r2: 10px; --r3: 14px;
   --shadow: 0 10px 30px rgba(0, 0, 0, .45);
   /* TradingView chart window palette (kept identical to TradingView dark) */
-  --tv-bg: #ffffff; --tv-panel: #f0f3fa; --tv-border: #e0e3eb; --tv-text: #131722; --tv-muted: #787b86; --tv-blue: #2962ff; --tv-up: #089981; --tv-down: #f23645;
+  --tv-bg: #131722; --tv-panel: #2a2e39; --tv-border: #2a2e39; --tv-text: #d1d4dc; --tv-muted: #787b86; --tv-blue: #2962ff; --tv-up: #089981; --tv-down: #f23645;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -59,7 +59,7 @@ button { font: inherit; color: inherit; cursor: default; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 
 /* ---------- TradingView-style chart window ---------- */
-#tv { margin: var(--s2) var(--s4) 0; background: var(--tv-bg); border: 1px solid var(--tv-border); border-radius: var(--r1); display: grid; grid-template-rows: 44px 1fr 28px 32px; overflow: hidden;
+#tv { margin: var(--s2) var(--s4) 0; background: var(--tv-bg); border: 1px solid var(--tv-border); border-radius: var(--r1); display: grid; grid-template-rows: 44px minmax(0, 1fr) 28px 32px; overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif; color: var(--tv-text); }
 #tv-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--s2); border-bottom: 1px solid var(--tv-border); background: var(--tv-bg); }
 .tv-group { display: flex; align-items: center; gap: 2px; min-width: 0; flex-shrink: 0; }
@@ -73,8 +73,8 @@ button { font: inherit; color: inherit; cursor: default; }
 .tv-btn svg { opacity: .9; }
 .tv-pill { font-size: 12px; color: var(--tv-muted); border: 1px solid var(--tv-border); border-radius: 4px; padding: 3px 8px; }
 #mode-chip { font-size: 11px; letter-spacing: 1.5px; font-weight: 700; color: #fff; background: var(--tv-blue); padding: 4px 9px; border-radius: 4px; }
-#tv-body { display: grid; grid-template-columns: 44px 1fr 40px; min-height: 0; }
-#tv-left { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 6px; border-right: 1px solid var(--tv-border); background: var(--tv-bg); }
+#tv-body { display: grid; grid-template-columns: 44px minmax(0, 1fr) 40px; min-height: 0; overflow: hidden; }
+#tv-left { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 6px; border-right: 1px solid var(--tv-border); background: var(--tv-bg); min-height: 0; overflow-y: auto; scrollbar-width: none; }
 #tv-left button { width: 34px; height: 30px; border: 0; background: transparent; color: var(--tv-muted); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
 #tv-left button:hover { background: var(--tv-panel); color: var(--tv-text); }
 #tv-left button svg { width: 18px; height: 18px; }
@@ -102,7 +102,7 @@ button { font: inherit; color: inherit; cursor: default; }
 #legend2 { position: absolute; top: 36px; left: 12px; z-index: 3; display: flex; gap: 6px; font-size: 16px; color: var(--tv-muted); font-variant-numeric: tabular-nums; }
 .lg-k2 { color: var(--tv-muted); margin-left: 4px; }
 #legend2 .lg-v { color: var(--tv-text); }
-#live-readout { position: absolute; bottom: 40px; left: 12px; background: rgba(255, 255, 255, .92); border: 1px solid var(--tv-border); padding: 6px 12px; border-radius: 4px; z-index: 3; display: flex; align-items: center; gap: 10px; font-variant-numeric: tabular-nums; color: var(--tv-text); }
+#live-readout { position: absolute; bottom: 40px; left: 12px; background: rgba(19, 23, 34, .92); color: var(--tv-text); border: 1px solid var(--tv-border); padding: 6px 12px; border-radius: 4px; z-index: 3; display: flex; align-items: center; gap: 10px; font-variant-numeric: tabular-nums; color: var(--tv-text); }
 #live-readout .lr-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tv-up); animation: pulse 1.2s infinite; }
 #lr-label { font-size: 11px; letter-spacing: 1.5px; color: var(--tv-muted); font-weight: 700; }
 #lr-price { font-size: 30px; font-weight: 800; }

@@ -25,3 +25,8 @@ training/streamer_style/urls.txt
 *.m4a
 *.webm
 *.mp4
+
+# personal recordings never go to the public repo
+My Voice*/
+*.mp3
+app/voice/ref/haddan_*.wav

@@ -52,11 +52,11 @@ import { ChartEngine } from "./chart.js";
   };
   chart.onTextEdit = (t) => {
     edTarget = t;
-    let style = { size: 16, color: "#131722", bg: "#ffffff" };
+    let style = { size: 16, color: "#d1d4dc", bg: "#131722" };
     try { style = { ...style, ...(JSON.parse(localStorage.getItem("note_style") || "{}")) }; } catch (e) { /* ignore */ }
     if (t.existing) style = { size: t.existing.size || style.size, color: t.existing.color || style.color, bg: t.existing.bg || style.bg };
-    edText.value = t.existing ? t.existing.text : ""; edSize.value = style.size; edColor.value = style.color.startsWith("#") ? style.color : "#131722";
-    $("#ne-nobg").checked = style.bg === "transparent"; edBg.value = style.bg && style.bg.startsWith("#") ? style.bg : "#ffffff";
+    edText.value = t.existing ? t.existing.text : ""; edSize.value = style.size; edColor.value = style.color.startsWith("#") ? style.color : "#d1d4dc";
+    $("#ne-nobg").checked = style.bg === "transparent"; edBg.value = style.bg && style.bg.startsWith("#") ? style.bg : "#131722";
     const wrap = $("#chart-wrap").getBoundingClientRect(), stage = $("#stage").getBoundingClientRect(); const k = stage.width ? 1080 / stage.width : 1;
     ed.style.left = Math.min(1080 - 340, Math.max(0, (wrap.left - stage.left) * k + t.x)) + "px"; ed.style.top = Math.max(0, (wrap.top - stage.top) * k + t.y + 12) + "px";
     ed.classList.remove("hidden"); edText.focus();
