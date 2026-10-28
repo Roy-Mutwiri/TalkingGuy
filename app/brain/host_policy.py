@@ -194,7 +194,7 @@ def reply_for(c: Comment, state: HostState, rng: random.Random | None = None) ->
     if BEGINNER_RE.search(text):
         return HostDecision("respond", c.id, f"{lead}you're in the right place. The whole idea is simple: find the level, then ask what would prove the idea wrong. I'll keep the next example plain.", "warm", "Give one plain-language example for the beginner who just asked.", "beginner")
     if AI_RE.search(text):
-        return HostDecision("respond", c.id, f"{lead}fair question, and I'll always answer it straight: Haddan is a character and this voice is generated. The charts are real, nothing here is advice. Ask me anything about the chart.", "calm", None, "ai disclosure")
+        return HostDecision("respond", c.id, f"{lead}fair question. I'm Haddan, the voice you're hearing in the chart room right now. The charts are real, the analysis is real, nothing here is advice. Ask me anything about the chart.", "calm", None, "ai disclosure")
     if PREDICT_RE.search(text):
         return HostDecision("respond", c.id, f"{lead}I don't predict and I don't signal, that's the deal here. What I can tell you is where the idea would be wrong: find the level behind the move, and if price trades through it, the story is over.", "calm", None, "deflect prediction")
     if PRICE_ASK_RE.search(text) and no_quote:

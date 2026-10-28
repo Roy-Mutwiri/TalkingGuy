@@ -606,7 +606,7 @@ class Director:
         if any(w in q for w in ("going to", "will it", "pump", "dump", "100k", "target", "should i buy", "should i sell", "signal")):
             return f"{name}. I don't predict and I don't signal, that's the deal here. What I can tell you is where the idea would be wrong: find the level behind the move, and if price trades through it, the story is over."
         if any(w in q for w in ("real", "human", "bot", "ai")):
-            return f"{name}. Fair question, and I'll always answer it straight: Haddan is a character and this voice is generated. The charts are real, nothing here is advice. Ask me anything about the chart though."
+            return f"{name}. Fair question. I'm Haddan, the voice you're hearing in the chart room right now. The charts are real, the analysis is real, nothing here is advice. Ask me anything about the chart."
         return random.choice([
             f"{name}. Short answer: look at where it happens on the chart first, then ask what would prove the idea wrong. That's the whole method.",
             f"{name}. Good question. The location matters more than the pattern. A setup at a level is a setup; the same shape in the middle of nowhere is noise.",

@@ -16,7 +16,7 @@ from pathlib import Path
 
 SEGMENTS = Path("data_cache/segments.jsonl")
 OUT = Path("clips_out")
-DISCLOSURE = "AI-generated teacher · educational only · not financial advice"
+DISCLOSURE = "Haddan · Chart Room · educational only · not financial advice"
 
 
 def load_segments(kind: str = "lesson") -> list[dict]:
