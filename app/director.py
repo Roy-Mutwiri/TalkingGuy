@@ -208,14 +208,6 @@ class Director:
             self.chat.offer(msg.get("user", "@operator"), msg["text"])
         elif cmd == "voice" and msg.get("voice"):
             await self._set_voice(msg.get("engine", "edge"), msg["voice"], bool(msg.get("preview")))
-        elif cmd == "music_online":
-            on = bool(msg.get("on"))
-            if self.music is not None:
-                self.music.set_online(on)
-                self._save_setting("music_online", on)
-                await self.status("music: " + ("popular tracks from the internet (Audius trending), non-stop" if on else "back to the folder tracks"))
-            else:
-                await self.status("music bed is off (no audio device or no music folder)")
         elif cmd == "music_skip":
             if self.music is not None:
                 self.music.skip()
@@ -245,8 +237,7 @@ class Director:
         await self.send(self._state_msg())
 
     def _state_msg(self) -> dict:
-        m = getattr(self.music, "online", False) if self.music is not None else False
-        return {"type": "state", "paused": self.paused, "muted": self.muted, "music_online": bool(m),
+        return {"type": "state", "paused": self.paused, "muted": self.muted,
                 "now_playing": getattr(self.music, "now_playing", "") if self.music is not None else ""}
 
     @staticmethod
@@ -1247,9 +1238,6 @@ class Director:
                                 await self._set_voice(st.get("engine", "edge"), st.get("voice", ""), False)
                                 if st.get("tiktok") and not self.chat.unique_id:
                                     await self.chat.set_username(st["tiktok"])
-                                if st.get("music_online") and self.music is not None:
-                                    self.music.set_online(True)
-                                    await self.status("music: popular tracks from the internet (Audius trending), restored from last time")
                                 await self.send(self._state_msg())
                         except Exception as exc:  # noqa: BLE001
                             log.warning("voice settings: %s", exc)

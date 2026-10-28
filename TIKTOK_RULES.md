@@ -28,7 +28,6 @@ Last checked: 26 October 2026. Sources: TikTok Community Guidelines (effective 2
 - A music bed that plays only files in the `music/` folder, at a low level, ducked under the voice.
 - `scripts/make_music.py` generates original beats locally (`--style arabic` for oud, darbuka, khaleeji, shaabi and dabke flavoured instrumentals) in the styles that travel on TikTok (afrobeats, amapiano, reggaeton, melodic trap, phonk, dance pop). They are ours, nothing to match.
 - If you want recognisable human-made tracks, use a library whose license explicitly names TikTok LIVE streaming (Epidemic Sound and similar sell that), and keep the license file.
-- **"Popular music" toggle in the console**: plays what is trending right now on Audius (an open platform where artists upload their own music; public API, no key) instead of the folder, non-stop, one track downloaded ahead. Remixes, edits, bootlegs, mashups and covers are skipped by title because they would match the original song. It is still artist-uploaded content, so if a track ever gets flagged, press Skip track and leave the toggle off for that session. Chart hits (label releases) are never fetched from anywhere: that is exactly what gets the LIVE muted.
 
 ## 3. Financial content
 

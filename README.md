@@ -20,7 +20,7 @@ and strict compliance rules (no signals, no predictions, no income claims, alway
    - **Tools**: ffmpeg and the WebView2 runtime are installed automatically; *Install / repair everything* redoes it all.
 4. Press **Start stream**. In TikTok LIVE Studio add a *Window Capture* of the window titled
    "Talking Trading Guy", set the microphone to *CABLE Output (VB-Audio Virtual Cable)*, portrait 9:16, go LIVE.
-5. Use **Open operator console** to connect the chat, switch voice, toggle the *Popular music* bed, queue topics.
+5. Use **Open operator console** to connect the chat, switch voice, skip a music track, queue topics.
 
 ### Updates
 
@@ -67,7 +67,6 @@ your own use on your own machines, not as the login of a product you distribute,
 
 ## License and content
 
-Music in `music/` is generated locally (original). The online music bed streams artist-uploaded tracks from the
-open platform Audius through its public API; commercial songs are never fetched (see `TIKTOK_RULES.md`).
+Music in `music/` is generated locally (original); nothing is streamed from the internet (see `TIKTOK_RULES.md`).
 The voice reference clips in `app/voice/ref/` are public-domain LibriVox readings (CC BY 4.0, see
 `ATTRIBUTION.json`). Chart rendering uses TradingView's open-source lightweight-charts (Apache-2.0).

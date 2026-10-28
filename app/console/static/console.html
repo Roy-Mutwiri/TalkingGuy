@@ -54,11 +54,10 @@ pre { font: 12px/1.5 var(--mono); color: var(--text-2); background: var(--bg); b
   </div>
   <div class="row" style="margin-top:12px">
     <span class="muted">Music</span>
-    <button id="btn-music" onclick="toggleMusic()">Popular music: OFF</button>
     <button onclick="cmd('music_skip')">Skip track</button>
     <span class="muted" id="np"></span>
   </div>
-  <div class="muted" style="font-size:12px;margin-top:6px">ON = non-stop trending tracks from the internet (Audius, artist-uploaded, remixes filtered out, safe for LIVE). OFF = your own tracks in the music folder.</div>
+  <div class="muted" style="font-size:12px;margin-top:6px">The bed plays only your own tracks from the music folder.</div>
   <div class="row" style="margin-top:12px">
     <span class="muted">Chart timeframe</span>
     <button onclick="tf('1m')">1m</button><button onclick="tf('5m')">5m</button><button onclick="tf('15m')">15m</button><button onclick="tf('1h')">1h</button><button onclick="tf('4h')">4h</button><button onclick="tf('1d')">D</button>
@@ -128,12 +127,9 @@ function connect() {
 }
 function sendObj(o) { if (!ws || ws.readyState !== 1) { log("not connected"); return; } ws.send(JSON.stringify(o)); log("> " + JSON.stringify(o)); }
 function cmd(c) { sendObj({ type: "operator", cmd: c }); }
-let musicOnline = false;
 function applyState(m) {
-  if ("music_online" in m) { musicOnline = !!m.music_online; const b = $("#btn-music"); b.textContent = "Popular music: " + (musicOnline ? "ON" : "OFF"); b.classList.toggle("primary", musicOnline); }
   if ("now_playing" in m) $("#np").textContent = m.now_playing ? "now playing: " + m.now_playing : "";
 }
-function toggleMusic() { sendObj({ type: "operator", cmd: "music_online", on: !musicOnline }); }
 function tf(t) { sendObj({ type: "operator", cmd: "tf", tf: t }); }
 function inject() { const v = $("#topic").value.trim(); if (v) sendObj({ type: "operator", cmd: "topic", text: v }); }
 function ask() { const v = $("#q").value.trim(); if (v) sendObj({ type: "operator", cmd: "ask", user: "@operator", text: v }); }

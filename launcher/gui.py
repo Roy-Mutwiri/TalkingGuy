@@ -25,8 +25,6 @@ SETTINGS_KEYS = [
     ("TTS_VOICE", "Edge voice id (edge engine)"),
     ("ENERGY", "Show energy 0..1"),
     ("MUSIC_LEVEL", "Music bed level 0..0.5"),
-    ("MUSIC_ONLINE_GENRES", "Online music: trending genres"),
-    ("MUSIC_ONLINE_SEARCH", "Online music: search words"),
     ("CLAUDE_MODEL", "Lesson model"),
     ("CLAUDE_CHAT_MODEL", "Chat model"),
     ("TWELVEDATA_KEY", "TwelveData key (optional)"),
@@ -102,7 +100,7 @@ class App:
         txt = ("How a stream day works:\n"
                "1. Start stream. The stage window opens (that is what TikTok LIVE Studio captures: Window Capture of \"Talking Trading Guy\").\n"
                "2. In LIVE Studio set the microphone to CABLE Output (VB-Audio) and go LIVE in portrait 9:16.\n"
-               "3. Open the operator console to connect the LIVE chat, switch voice, toggle the Popular music bed, queue topics.\n"
+               "3. Open the operator console to connect the LIVE chat, switch voice, queue topics.\n"
                "4. Leave it running. The supervisor restarts anything that dies, 24/7. Updates: press Update now when the badge shows.")
         ttk.Label(f, text=txt, justify="left", wraplength=780).pack(anchor="w")
         row3 = ttk.Frame(f); row3.pack(fill="x", pady=(14, 0))
