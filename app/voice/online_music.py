@@ -11,9 +11,10 @@ is still that song's composition and would be matched.
     src = OnlineMusic()
     path, label = src.next_file()      # downloads the next trending track into data_cache/online_music/, returns it
 
-Chart: the worldwide Audius trending chart ("all"), the Hip-Hop/Rap, Pop, Electronic and Dancehall charts, and the
-most-played tracks found by searching afrobeats / amapiano / afropop / tiktok / viral (artists tag their own TikTok
-sounds). All lists are interleaved one track each, most popular first, and re-fetched every 10 minutes so a track
+Chart (default mix: "aura" phonk and sigma sound, Drake-style melodic rap and trap-soul, trading beats): the Hip-Hop/Rap,
+Trap, R&B/Soul and Lo-Fi trending charts plus the worldwide chart ("all"), and the most-played tracks found by
+searching phonk / aura / sigma / drill / toronto / rnb rap / melodic rap / trap soul / lofi / hustle / grind /
+motivation / money / trading. All lists are interleaved one track each, most popular first, and re-fetched every 10 minutes so a track
 that climbs is picked up fast; nothing repeats until the list has been played through. Change the mix with
 MUSIC_ONLINE_GENRES (comma list of Audius trending genres, "all" = every genre) and MUSIC_ONLINE_SEARCH (comma
 list of search words) in .env. Downloads keep at most KEEP_FILES files in the cache.
@@ -39,9 +40,9 @@ CHART_LIMIT = 100
 REFRESH_S = 10 * 60                   # the chart itself moves over hours; 10 minutes keeps us current
 MIN_S, MAX_S = 75, 540                # skip jingles and very long mixes
 KEEP_FILES = 12
-SKIP_TITLE = re.compile(r"\b(remix|rmx|edit|bootleg|mashup|mash-up|cover|flip|rework|re-work|mix|sped.?up|speed.?up|slowed|nightcore|snippet|snipet|preview|teaser|intro|episode|type beat|instrumental)\b", re.I)
-GENRES = [g.strip() for g in os.getenv("MUSIC_ONLINE_GENRES", "all,Hip-Hop/Rap,Pop,Electronic,Dancehall").split(",") if g.strip()]
-SEARCHES = [q.strip() for q in os.getenv("MUSIC_ONLINE_SEARCH", "afrobeats,afrobeat,amapiano,afropop,tiktok,viral").split(",") if q.strip()]
+SKIP_TITLE = re.compile(r"\b(remix|rmx|edit|bootleg|mashup|mash-up|cover|flip|rework|re-work|mix|sped.?up|speed.?up|slowed|nightcore|snippet|snipet|preview|teaser|intro|episode)\b", re.I)
+GENRES = [g.strip() for g in os.getenv("MUSIC_ONLINE_GENRES", "Hip-Hop/Rap,Trap,R&B/Soul,Lo-Fi,all").split(",") if g.strip()]
+SEARCHES = [q.strip() for q in os.getenv("MUSIC_ONLINE_SEARCH", "phonk,aura,sigma,drill,toronto,rnb rap,melodic rap,trap soul,lofi,hustle,grind,motivation,money,trading").split(",") if q.strip()]
 
 
 class OnlineMusic:
