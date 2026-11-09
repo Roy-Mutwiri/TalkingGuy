@@ -1,4 +1,4 @@
-# Talking Trading Guy
+# Talking Trading Guy 3
 
 An AI trading teacher that streams unattended on TikTok LIVE: live gold and Bitcoin charts drawn step by step,
 lessons from a 67-lesson curriculum, a real human reference voice, live chat answers by name, a music bed,
